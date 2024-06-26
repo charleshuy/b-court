@@ -1,28 +1,31 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Input, message } from "antd";
 import { Link } from "react-router-dom";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import UserAPI from "../api/UserAPI";
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { from } = location.state || { from: { pathname: "/" } }; // Get previous location
 
   const handleLogin = async () => {
     try {
       const credentials = { email, password };
-      console.log("Attempting login with credentials:", credentials); // Debugging log
       const response = await UserAPI.login(credentials);
-      console.log("Login response:", response); // Debugging log
 
       // Assuming the response contains a token or user data
-      localStorage.setItem("token", response.token); // Or whatever data you need to store
+      localStorage.setItem("token", response.token);
       message.success("Login successful!");
-      navigate("/"); // Redirect to a protected route
+      onLogin(); // Update login status
+
+      // Redirect to previous location after login
+      navigate(from);
     } catch (error) {
-      console.error("Login failed:", error.response || error.message); // Debugging log
       message.error("Login failed. Please check your credentials.");
     }
   };
@@ -36,12 +39,14 @@ const Login = () => {
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis, ex
             ratione. Aliquid!
           </p>
-          <Link
-            to="/signup"
-            className="bg-white text-green-400 px-4 py-2 rounded-full flex items-center justify-center"
-          >
-            Sign Up
-          </Link>
+          {!localStorage.getItem("token") && (
+            <Link
+              to="/signup"
+              className="bg-white text-green-400 px-4 py-2 rounded-full flex items-center justify-center"
+            >
+              Sign Up
+            </Link>
+          )}
         </div>
         <img
           src="src/assets/images/bad2-modified.png"

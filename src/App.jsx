@@ -26,6 +26,7 @@ import SideBarv3 from "./adminpages/Sidebarv3";
 import ManagementUser from "./adminpages/ManagementUser";
 import ApproveCourt from "./adminpages/ApproveCourt";
 import { useState, useEffect } from "react";
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
@@ -36,12 +37,14 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
+    window.location.reload();
   };
+
   return (
     <Router>
       <Routes>
         <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route
           path="/"
           element={
@@ -62,7 +65,7 @@ function App() {
           path="/shop"
           element={
             <>
-              <Header />
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <Shop />
               <Footer />
             </>
@@ -72,7 +75,7 @@ function App() {
           path="/court-detail/:id"
           element={
             <>
-              <Header />
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <CourtDetail />
               <Footer />
             </>
@@ -82,7 +85,7 @@ function App() {
           path="/payment"
           element={
             <>
-              <Header />
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <Payment />
               <Footer />
             </>

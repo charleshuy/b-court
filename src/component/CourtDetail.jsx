@@ -1,40 +1,122 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { Select, DatePicker, Input, Button, Rate } from "antd";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Select, DatePicker, Button, Rate, Modal, message } from "antd";
 import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import moment from "moment";
-import courts from "../data";
+import CourtAPI from "../api/CourtAPI";
+import OrderAPI from "../api/OrderAPI";
+import PaymentMethodAPI from "../api/PaymentMethodAPI";
+import { jwtDecode } from "jwt-decode";
 
 const { Option } = Select;
 
-const time = [
-  "8:00 - 9:00",
-  "9:00 - 10:00",
-  "10:00 - 11:00",
-  "11:00 - 12:00",
-  "14:00 - 15:00",
-  "15:00 - 16:00",
-  "16:00 - 17:00",
-  "17:00 - 18:00",
-  "18:00 - 19:00",
-  "19:00 - 20:00",
+const timeSlots = [
+  "08:00",
+  "09:00",
+  "10:00",
+  "11:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+  "19:00",
 ];
 
 const CourtDetail = () => {
+  const [orderData, setOrderData] = useState({
+    bookingDate: "",
+    slotStart: "",
+    slotEnd: "",
+    user: {
+      userId: "",
+    },
+    court: {
+      courtId: "",
+    },
+    method: {
+      methodId: "",
+    },
+  });
   const { id } = useParams();
-  const court = courts.find((court) => court.id.toString() === id);
-  //eslint-disable-next-line
+  const [court, setCourt] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-  //eslint-disable-next-line
   const [selectedTimes, setSelectedTimes] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
   const [currentWeek, setCurrentWeek] = useState(0);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+
+  useEffect(() => {
+    // Decode token and set userId to orderData
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        setOrderData((prev) => ({
+          ...prev,
+          user: { userId: decodedToken.userId },
+        }));
+      } catch (error) {
+        console.error("Failed to decode token:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchCourt = async () => {
+      try {
+        const response = await CourtAPI.getCourts();
+        const courtData = response.find((court) => court.courtId === id);
+        setCourt(courtData);
+        // Set courtId in orderData when courtData is fetched
+        setOrderData((prev) => ({
+          ...prev,
+          court: { courtId: courtData.courtId },
+        }));
+      } catch (error) {
+        console.error("Failed to fetch court details:", error);
+      }
+    };
+
+    fetchCourt();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      try {
+        const methods = await PaymentMethodAPI.getPaymentMethods();
+        setPaymentMethods(methods);
+      } catch (error) {
+        console.error("Failed to fetch payment methods:", error);
+      }
+    };
+
+    fetchPaymentMethods();
+  }, []);
 
   const handleDateChange = (date) => {
+    const formattedDate = date.format("YYYY-MM-D");
     setSelectedDate(date);
+    setOrderData((prev) => ({ ...prev, bookingDate: formattedDate }));
   };
 
-  const handleTimeChange = (selectedTimes) => {
-    setSelectedTimes(selectedTimes);
+  const handleTimeChange = (times) => {
+    // Ensure times array is sorted chronologically
+    times.sort((a, b) => {
+      const timeA = moment(a, "HH:mm:ss");
+      const timeB = moment(b, "HH:mm:ss");
+      return timeA.diff(timeB);
+    });
+
+    if (times.length <= 2) {
+      setSelectedTimes(times);
+      setOrderData((prev) => ({
+        ...prev,
+        slotStart: times[0],
+        slotEnd: times[times.length - 1],
+      }));
+    }
   };
 
   const getWeekDates = (weekOffset = 0) => {
@@ -51,6 +133,27 @@ const CourtDetail = () => {
 
   const weekDates = getWeekDates(currentWeek);
 
+  const disabledDate = (current) => {
+    return current && current < moment().startOf("day");
+  };
+
+  const handleBookNow = async () => {
+    try {
+      const response = await OrderAPI.createOrder(orderData);
+      console.log("Order created successfully:", response);
+      message.success("Order created successfully");
+      setSuccessModalVisible(true); // Show success modal
+    } catch (error) {
+      console.error("Failed to create order:", error);
+      message.error("Failed to create order. Please try again.");
+      setErrorModalVisible(true); // Show error modal
+    }
+  };
+
+  useEffect(() => {
+    console.log("Updated orderData:", orderData);
+  }, [orderData]);
+
   if (!court) {
     return <div>Court not found</div>;
   }
@@ -60,17 +163,27 @@ const CourtDetail = () => {
       <div className="flex">
         <div className="w-1/2 p-4">
           <img
-            src={court.img}
-            alt={court.name}
+            src={court.img || "src/assets/images/default_court.png"}
+            alt={court.courtName}
             className="w-full h-64 object-cover rounded-lg mb-4"
           />
         </div>
         <div className="w-1/2 p-4">
-          <h1 className="text-2xl font-bold">{court.name}</h1>
-          <p className="text-gray-600">{court.address}</p>
-          <p className="text-gray-600">Description: {court.description}</p>
+          <h1 className="text-2xl font-bold">{court.courtName}</h1>
+          <p className="text-gray-600">{court.location.address}</p>
+          <p className="text-gray-600">
+            {court.location.district.districtName},{" "}
+            {court.location.district.city.cityName}
+          </p>
           <Rate disabled defaultValue={5} />
-          <p className="text-lg font-semibold">Price: {court.price}</p>
+          <p className="text-lg font-semibold">
+            Price:{" "}
+            {court.price.toLocaleString("vi-VN", {
+              style: "currency",
+              currency: "VND",
+            })}
+          </p>
+          <p className="text-gray-600 mt-2">{court.description}</p>
         </div>
       </div>
       <div className="my-4">
@@ -83,26 +196,43 @@ const CourtDetail = () => {
           onChange={handleDateChange}
           className="w-full mb-2"
           placeholder="Select Date"
+          disabledDate={disabledDate}
         />
         <Select
+          placeholder="Select Payment Method"
+          className="w-full mb-2"
+          onChange={(value) =>
+            setOrderData((prev) => ({
+              ...prev,
+              method: { methodId: value },
+            }))
+          }
+        >
+          {paymentMethods.map((method) => (
+            <Option key={method.methodId} value={method.methodId}>
+              {method.methodName}
+            </Option>
+          ))}
+        </Select>
+        <Select
           mode="multiple"
-          placeholder="Select Time"
+          placeholder="Select Time Start and Time End"
           className="w-full mb-2"
           onChange={handleTimeChange}
+          value={selectedTimes}
         >
-          {time.map((slot) => (
+          {timeSlots.map((slot) => (
             <Option key={slot} value={slot}>
               {slot}
             </Option>
           ))}
         </Select>
-        <Input placeholder="Full Name" className="mb-2" />
-        <Input placeholder="Email" className="mb-4" />
-        <Link to="/payment">
-          <button className="w-full h-10 rounded bg-orange-500 text-white hover:bg-orange-600">
-            Book Now
-          </button>
-        </Link>
+        <Button
+          className="w-full h-10 rounded bg-orange-500 text-white hover:bg-orange-600"
+          onClick={handleBookNow}
+        >
+          Book Now
+        </Button>
       </div>
       <div className="mt-8">
         <h2 className="text-2xl font-bold mb-4">
@@ -129,7 +259,7 @@ const CourtDetail = () => {
             <div key={index} className="bg-white p-4 rounded shadow">
               <h3 className="font-bold">{moment(date).format("L")}</h3>
               <div className="mt-2">
-                {time.map((slot) => (
+                {timeSlots.map((slot) => (
                   <div key={slot} className="bg-gray-200 p-2 rounded mb-2">
                     {slot} - 120k
                   </div>
