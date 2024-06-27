@@ -29,21 +29,17 @@ const Signup = () => {
   };
 
   const handleSubmit = async () => {
-    const { phone, ...restData } = userData;
+    // Log form data
+    console.log("Form data:", userData);
 
     // Validate phone number
-    if (phone.length !== 10 || isNaN(phone)) {
+    if (userData.phone.length !== 10 || isNaN(userData.phone)) {
       message.error("Phone number must be 10 digits.");
       return;
     }
 
-    const formattedData = {
-      ...restData,
-      phone: parseInt(phone, 10),
-    };
-
     try {
-      await UserAPI.register(formattedData);
+      await UserAPI.register(userData);
       message.success("Registration successful!");
       navigate("/login");
     } catch (error) {
