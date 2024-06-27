@@ -4,7 +4,7 @@ import { Input, message } from "antd";
 import { Link } from "react-router-dom";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import UserAPI from "../api/UserAPI";
-
+import { jwtDecode } from "jwt-decode";
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,7 +22,6 @@ const Login = ({ onLogin }) => {
       localStorage.setItem("token", response.token);
       message.success("Login successful!");
       onLogin(); // Update login status
-
       // Redirect to previous location after login
       navigate(from);
     } catch (error) {

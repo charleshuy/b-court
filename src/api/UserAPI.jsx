@@ -10,6 +10,38 @@ const UserAPI = {
     const response = await apiClient.post("/auth/login", credentials);
     return response.data;
   },
+
+  createUser: async (userData) => {
+    const response = await apiClient.post("/users", userData);
+    return response.data;
+  },
+
+  getAllUsers: async (page = 0, size = 10) => {
+    const response = await apiClient.get(`/users?page=${page}&size=${size}`);
+    return response.data;
+  },
+
+  deleteUserById: async (userId) => {
+    const response = await apiClient.delete(`/users/delete/${userId}`);
+    return response.data;
+  },
+
+  searchUsersByName: async (userName, page = 0, size = 10) => {
+    const response = await apiClient.get(
+      `/users/search?userName=${userName}&page=${page}&size=${size}`
+    );
+    return response.data;
+  },
+
+  getUserById: async (userId) => {
+    const response = await apiClient.get(`/users/${userId}`);
+    return response.data;
+  },
+
+  updateUser: async (userData) => {
+    const response = await apiClient.put("/users", userData);
+    return response.data;
+  },
 };
 
 export default UserAPI;

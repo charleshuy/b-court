@@ -53,7 +53,7 @@ const Court = () => {
               </div>
               <Link to={`/court-detail/${court.courtId}`}>
                 <button className="mt-4 w-full py-2 bg-orange-500 text-white rounded hover:bg-orange-600">
-                  Đặt Sân
+                  Book Court
                 </button>
               </Link>
             </div>

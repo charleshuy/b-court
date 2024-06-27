@@ -1,40 +1,76 @@
-import { useState } from "react";
-import { Table, Button, Modal, Form, Input, Select } from "antd";
+import React, { useState, useEffect } from "react";
+import { Table, Button, Modal, Form, Input, Select, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import CourtAPI from "../api/CourtAPI";
 
 const { Option } = Select;
 
 const ManagementCourt = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingCourt, setEditingCourt] = useState(null);
-  const [courts, setCourts] = useState([
-    {
-      key: "1",
-      image: "https://via.placeholder.com/150",
-      courtName: "Court A",
-      license: "Valid",
-      location: "Location 1",
-      price: "100",
-      status: "Active",
-    },
-  ]);
+  const [editingCourt, setEditingCourt] = useState(null); // Use null for new court
+  const [courts, setCourts] = useState([]);
+
+  useEffect(() => {
+    const fetchCourts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          message.error("User not logged in");
+          return;
+        }
+        const decodedToken = jwtDecode(token);
+        const userId = decodedToken.userId;
+        const courtsData = await CourtAPI.getCourtsByUserId(userId);
+        setCourts(courtsData);
+      } catch (error) {
+        message.error("Failed to fetch courts");
+        console.error(error);
+      }
+    };
+
+    fetchCourts();
+  }, []);
 
   const showModal = (court) => {
-    setEditingCourt(court);
+    if (court) {
+      // If editing existing court
+      setEditingCourt(court);
+    } else {
+      // If adding new court
+      setEditingCourt({
+        image: "",
+        courtName: "",
+        license: "",
+        location: {
+          address: "",
+          district: {
+            districtName: "",
+            city: {
+              cityName: "",
+            },
+          },
+        },
+        price: "",
+        status: false, // Assuming default status is active
+      });
+    }
     setIsModalVisible(true);
   };
 
   const handleOk = () => {
     setIsModalVisible(false);
 
-    if (editingCourt.key) {
+    if (editingCourt && editingCourt.key) {
       const updatedCourts = courts.map((court) =>
         court.key === editingCourt.key ? editingCourt : court
       );
       setCourts(updatedCourts);
     } else {
-      setCourts([...courts, { ...editingCourt, key: courts.length + 1 }]);
+      // Add new court
+      const newCourt = { ...editingCourt, key: courts.length + 1 };
+      setCourts([...courts, newCourt]);
     }
     setEditingCourt(null);
   };
@@ -61,14 +97,11 @@ const ManagementCourt = () => {
       key: "courtName",
     },
     {
-      title: "License",
-      dataIndex: "license",
-      key: "license",
-    },
-    {
       title: "Location",
       dataIndex: "location",
       key: "location",
+      render: (location) =>
+        `${location.address}, ${location.district.districtName}, ${location.district.city.cityName}`,
     },
     {
       title: "Price",
@@ -79,6 +112,7 @@ const ManagementCourt = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (status) => <span>{status ? "Active" : "Inactive"}</span>,
     },
     {
       title: "Action",
@@ -101,7 +135,7 @@ const ManagementCourt = () => {
         <h2 className="text-2xl font-bold">Courts</h2>
         <Button
           type="primary"
-          onClick={() => showModal({})}
+          onClick={() => showModal(null)} // Null indicates adding new court
           icon={<PlusOutlined />}
           className="mb-4"
         >
@@ -110,14 +144,12 @@ const ManagementCourt = () => {
       </div>
       <Table columns={columns} dataSource={courts} />
       <Modal
-        title={
-          editingCourt && editingCourt.key ? "Edit Court" : "Request Add Court"
-        }
+        title={editingCourt ? "Edit Court" : "Request Add Court"}
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
       >
-        {editingCourt && (
+        {editingCourt !== null && (
           <Form layout="vertical">
             <Form.Item label="Image URL">
               <Input
@@ -146,13 +178,53 @@ const ManagementCourt = () => {
                 }
               />
             </Form.Item>
-            <Form.Item label="Location">
+            <Form.Item label="Address">
               <Input
-                value={editingCourt.location}
+                value={editingCourt.location.address}
                 onChange={(e) =>
                   setEditingCourt({
                     ...editingCourt,
-                    location: e.target.value,
+                    location: {
+                      ...editingCourt.location,
+                      address: e.target.value,
+                    },
+                  })
+                }
+              />
+            </Form.Item>
+            <Form.Item label="District">
+              <Input
+                value={editingCourt.location.district.districtName}
+                onChange={(e) =>
+                  setEditingCourt({
+                    ...editingCourt,
+                    location: {
+                      ...editingCourt.location,
+                      district: {
+                        ...editingCourt.location.district,
+                        districtName: e.target.value,
+                      },
+                    },
+                  })
+                }
+              />
+            </Form.Item>
+            <Form.Item label="City">
+              <Input
+                value={editingCourt.location.district.city.cityName}
+                onChange={(e) =>
+                  setEditingCourt({
+                    ...editingCourt,
+                    location: {
+                      ...editingCourt.location,
+                      district: {
+                        ...editingCourt.location.district,
+                        city: {
+                          ...editingCourt.location.district.city,
+                          cityName: e.target.value,
+                        },
+                      },
+                    },
                   })
                 }
               />
@@ -167,9 +239,12 @@ const ManagementCourt = () => {
             </Form.Item>
             <Form.Item label="Status">
               <Select
-                value={editingCourt.status}
+                value={editingCourt.status ? "Active" : "Inactive"}
                 onChange={(value) =>
-                  setEditingCourt({ ...editingCourt, status: value })
+                  setEditingCourt({
+                    ...editingCourt,
+                    status: value === "Active",
+                  })
                 }
               >
                 <Option value="Active">Active</Option>

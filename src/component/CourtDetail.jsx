@@ -41,6 +41,7 @@ const CourtDetail = () => {
     },
     method: {
       methodId: "",
+      methodName: "",
     },
   });
   const { id } = useParams();
@@ -318,12 +319,18 @@ const CourtDetail = () => {
         <Select
           placeholder="Select Payment Method"
           className="w-full mb-2"
-          onChange={(value) =>
+          onChange={(value) => {
+            const selectedMethod = paymentMethods.find(
+              (method) => method.methodId === value
+            );
             setOrderData((prev) => ({
               ...prev,
-              method: { methodId: value },
-            }))
-          }
+              method: {
+                methodId: selectedMethod.methodId,
+                methodName: selectedMethod.methodName,
+              },
+            }));
+          }}
         >
           {paymentMethods.map((method) => (
             <Option key={method.methodId} value={method.methodId}>
