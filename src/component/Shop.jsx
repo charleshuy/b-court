@@ -7,7 +7,7 @@ import CourtAPI from "../api/CourtAPI";
 const { Option } = Select;
 
 const getUniqueAddresses = (courts) => {
-  const addresses = courts.map((court) => court.location.address);
+  const addresses = courts.map((court) => court.location.district.districtName);
   return [...new Set(addresses)];
 };
 
@@ -60,7 +60,7 @@ const Shop = () => {
 
     if (addresses.length > 0) {
       filtered = filtered.filter((court) =>
-        addresses.includes(court.location.address)
+        addresses.includes(court.location.district.districtName)
       );
     }
 
@@ -134,6 +134,9 @@ const Shop = () => {
                           style: "currency",
                           currency: "VND",
                         })}
+                      </p>
+                      <p className="text-gray-500 mt-2">
+                        {`${court.location.address}, ${court.location.district.districtName}, ${court.location.district.city.cityName}`}
                       </p>
                       <Link to={`/court-detail/${court.courtId}`}>
                         <button className="mt-4 bg-yellow-500 text-white px-4 py-2 rounded-full w-full">

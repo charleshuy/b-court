@@ -20,6 +20,49 @@ const OrderAPI = {
       throw error;
     }
   },
+  getOrdersByUserId: async (userId, page = 0, size = 10) => {
+    try {
+      const response = await apiClient.get(`/orders/user/${userId}`, {
+        params: { page, size },
+      });
+      return response.data.content;
+    } catch (error) {
+      console.error(`Can't fetch orders for user ${userId}:`, error);
+      throw error;
+    }
+  },
+
+  deleteOrderById: async (orderId) => {
+    try {
+      await apiClient.delete(`/orders/delete/${orderId}`);
+    } catch (error) {
+      console.error(`Can't delete order ${orderId}:`, error);
+      throw error;
+    }
+  },
+
+  getOrdersByCourtAndDate: async (
+    courtId,
+    bookingDate,
+    page = 0,
+    size = 10
+  ) => {
+    try {
+      const response = await apiClient.get(
+        `/orders/court/${courtId}/date/${bookingDate}`,
+        {
+          params: { page, size },
+        }
+      );
+      return response.data.content;
+    } catch (error) {
+      console.error(
+        `Can't fetch orders for court ${courtId} and date ${bookingDate}:`,
+        error
+      );
+      throw error;
+    }
+  },
 };
 
 export default OrderAPI;

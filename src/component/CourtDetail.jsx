@@ -11,16 +11,21 @@ import { jwtDecode } from "jwt-decode";
 const { Option } = Select;
 
 const timeSlots = [
+  "06:00",
+  "07:00",
   "08:00",
   "09:00",
   "10:00",
   "11:00",
+  "12:00",
+  "13:00",
   "14:00",
   "15:00",
   "16:00",
   "17:00",
   "18:00",
   "19:00",
+  "20:00",
 ];
 
 const CourtDetail = () => {
@@ -46,6 +51,7 @@ const CourtDetail = () => {
   const [currentWeek, setCurrentWeek] = useState(0);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [errorModalVisible, setErrorModalVisible] = useState(false);
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     // Decode token and set userId to orderData
@@ -62,6 +68,19 @@ const CourtDetail = () => {
       }
     }
   }, []);
+  const fetchOrders = async () => {
+    if (selectedDate && orderData.court.courtId) {
+      try {
+        const orders = await OrderAPI.getOrdersByCourtAndDate(
+          orderData.court.courtId,
+          orderData.bookingDate
+        );
+        setOrders(orders);
+      } catch (error) {
+        console.error("Failed to fetch orders:", error);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchCourt = async () => {
@@ -95,12 +114,48 @@ const CourtDetail = () => {
     fetchPaymentMethods();
   }, []);
 
-  const handleDateChange = (date) => {
+  const getSlotBookingInfo = (slot) => {
+    const start = orders.some((order) =>
+      moment(slot, "HH:mm").isSame(moment(order.slotStart, "HH:mm"))
+    );
+    const end = orders.some((order) =>
+      moment(slot, "HH:mm").isSame(moment(order.slotEnd, "HH:mm"))
+    );
+
+    if (start && end) return "startEnd";
+    if (start) return "start";
+    if (end) return "end";
+    if (
+      orders.some((order) =>
+        moment(slot, "HH:mm").isBetween(
+          moment(order.slotStart, "HH:mm"),
+          moment(order.slotEnd, "HH:mm"),
+          null,
+          "[)"
+        )
+      )
+    )
+      return "middle";
+
+    return "none";
+  };
+
+  const handleDateChange = async (date) => {
     const formattedDate = date.format("YYYY-MM-D");
     setSelectedDate(date);
     setOrderData((prev) => ({ ...prev, bookingDate: formattedDate }));
-  };
 
+    // Fetch orders for the selected date
+    try {
+      const fetchedOrders = await OrderAPI.getOrdersByCourtAndDate(
+        id,
+        formattedDate
+      );
+      setOrders(fetchedOrders);
+    } catch (error) {
+      console.error("Failed to fetch orders for the selected date:", error);
+    }
+  };
   const handleTimeChange = (times) => {
     // Ensure times array is sorted chronologically
     times.sort((a, b) => {
@@ -143,12 +198,36 @@ const CourtDetail = () => {
       console.log("Order created successfully:", response);
       message.success("Order created successfully");
       setSuccessModalVisible(true); // Show success modal
+      setSelectedTimes([]); // Reset selected times
+      setOrderData((prev) => ({
+        ...prev,
+        slotStart: "",
+        slotEnd: "",
+      })); // Reset order data slots
+      fetchOrders(); // Fetch updated orders
     } catch (error) {
       console.error("Failed to create order:", error);
       message.error("Failed to create order. Please try again.");
       setErrorModalVisible(true); // Show error modal
     }
   };
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (selectedDate && orderData.court.courtId) {
+        try {
+          const orders = await OrderAPI.getOrdersByCourtAndDate(
+            orderData.court.courtId,
+            orderData.bookingDate
+          );
+          setOrders(orders);
+        } catch (error) {
+          console.error("Failed to fetch orders:", error);
+        }
+      }
+    };
+
+    fetchOrders();
+  }, [selectedDate, orderData.court.courtId]);
 
   useEffect(() => {
     console.log("Updated orderData:", orderData);
@@ -198,6 +277,44 @@ const CourtDetail = () => {
           placeholder="Select Date"
           disabledDate={disabledDate}
         />
+        <div className="bg-green-100 rounded-lg p-2 mb-2 flex justify-center">
+          <div className="flex justify-between w-full">
+            {timeSlots.map((slot) => {
+              const bookingInfo = getSlotBookingInfo(slot);
+              let slotStyle = {
+                flex: "1 0 auto",
+                width: "50px",
+                height: "50px",
+              };
+
+              if (bookingInfo === "start") {
+                slotStyle.background =
+                  "linear-gradient(to right, green 50%, red 50%)";
+              } else if (bookingInfo === "end") {
+                slotStyle.background =
+                  "linear-gradient(to right, red 50%, green 50%)";
+              } else if (bookingInfo === "startEnd") {
+                slotStyle.background =
+                  "linear-gradient(to right, red 50%, red 50%)";
+              } else if (bookingInfo === "middle") {
+                slotStyle.background = "red";
+              } else {
+                slotStyle.background = "green";
+              }
+
+              return (
+                <div
+                  key={slot}
+                  className="flex items-center justify-center"
+                  style={slotStyle}
+                >
+                  {slot.split(":")[0]}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <Select
           placeholder="Select Payment Method"
           className="w-full mb-2"
@@ -233,41 +350,6 @@ const CourtDetail = () => {
         >
           Book Now
         </Button>
-      </div>
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">
-          Đặt sân theo khung thời gian
-        </h2>
-        <div className="flex justify-between items-center mb-4">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            className="bg-gray-200"
-            onClick={() => setCurrentWeek((prev) => prev - 1)}
-          >
-            Tuần trước
-          </Button>
-          <Button
-            icon={<ArrowRightOutlined />}
-            className="bg-gray-200"
-            onClick={() => setCurrentWeek((prev) => prev + 1)}
-          >
-            Tuần sau
-          </Button>
-        </div>
-        <div className="grid grid-cols-7 gap-4">
-          {weekDates.map((date, index) => (
-            <div key={index} className="bg-white p-4 rounded shadow">
-              <h3 className="font-bold">{moment(date).format("L")}</h3>
-              <div className="mt-2">
-                {timeSlots.map((slot) => (
-                  <div key={slot} className="bg-gray-200 p-2 rounded mb-2">
-                    {slot} - 120k
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
