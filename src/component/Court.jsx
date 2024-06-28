@@ -49,7 +49,7 @@ const Court = () => {
                 <p className="text-gray-600 mt-2">
                   {"Description not available"}
                 </p>
-                <p className="text-yellow-500 mt-2">{court.price}đ/h</p>
+                <p className="text-yellow-500 mt-2">{court.price}$/h</p>
               </div>
               <Link to={`/court-detail/${court.courtId}`}>
                 <button className="mt-4 w-full py-2 bg-orange-500 text-white rounded hover:bg-orange-600">

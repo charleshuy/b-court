@@ -130,9 +130,9 @@ const Shop = () => {
                       </h3>
                       <p className="text-gray-600">{court.description}</p>
                       <p className="text-yellow-500 mt-2">
-                        {court.price.toLocaleString("vi-VN", {
+                        {court.price.toLocaleString("en-US", {
                           style: "currency",
-                          currency: "VND",
+                          currency: "USD",
                         })}
                       </p>
                       <p className="text-gray-500 mt-2">

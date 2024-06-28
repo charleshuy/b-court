@@ -258,9 +258,9 @@ const CourtDetail = () => {
           <Rate disabled defaultValue={5} />
           <p className="text-lg font-semibold">
             Price:{" "}
-            {court.price.toLocaleString("vi-VN", {
+            {court.price.toLocaleString("en-US", {
               style: "currency",
-              currency: "VND",
+              currency: "USD",
             })}
           </p>
           <p className="text-gray-600 mt-2">{court.description}</p>

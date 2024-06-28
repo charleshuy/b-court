@@ -4,6 +4,7 @@ import { PlusOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import CourtAPI from "../api/CourtAPI";
+import LocationAPI from "../api/LocationAPI";
 
 const { Option } = Select;
 
@@ -11,32 +12,51 @@ const ManagementCourt = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCourt, setEditingCourt] = useState(null); // Use null for new court
   const [courts, setCourts] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
+
+  const fetchInitialData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        message.error("User not logged in");
+        return;
+      }
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.userId;
+
+      const [courtsData, citiesData] = await Promise.all([
+        CourtAPI.getCourtsByUserId(userId),
+        LocationAPI.getAllCities(),
+      ]);
+
+      setCourts(courtsData);
+      setCities(citiesData);
+    } catch (error) {
+      message.error("Failed to fetch initial data");
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
-    const fetchCourts = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          message.error("User not logged in");
-          return;
-        }
-        const decodedToken = jwtDecode(token);
-        const userId = decodedToken.userId;
-        const courtsData = await CourtAPI.getCourtsByUserId(userId);
-        setCourts(courtsData);
-      } catch (error) {
-        message.error("Failed to fetch courts");
-        console.error(error);
-      }
-    };
-
-    fetchCourts();
+    fetchInitialData();
   }, []);
+
+  const fetchDistricts = async (cityId) => {
+    try {
+      const districtsData = await LocationAPI.getDistrictsByCityId(cityId);
+      setDistricts(districtsData);
+    } catch (error) {
+      message.error("Failed to fetch districts");
+      console.error(error);
+    }
+  };
 
   const showModal = (court) => {
     if (court) {
       // If editing existing court
-      setEditingCourt(court);
+      setEditingCourt({ ...court, courtId: court.courtId });
+      fetchDistricts(court.location.district.city.cityId);
     } else {
       // If adding new court
       setEditingCourt({
@@ -47,32 +67,38 @@ const ManagementCourt = () => {
           address: "",
           district: {
             districtName: "",
+            districtId: "",
             city: {
               cityName: "",
+              cityId: "",
             },
           },
         },
         price: "",
-        status: false, // Assuming default status is active
+        status: false, // Assuming default status is inactive
       });
     }
     setIsModalVisible(true);
   };
 
-  const handleOk = () => {
-    setIsModalVisible(false);
-
-    if (editingCourt && editingCourt.key) {
-      const updatedCourts = courts.map((court) =>
-        court.key === editingCourt.key ? editingCourt : court
-      );
-      setCourts(updatedCourts);
-    } else {
-      // Add new court
-      const newCourt = { ...editingCourt, key: courts.length + 1 };
-      setCourts([...courts, newCourt]);
+  const handleOk = async () => {
+    try {
+      if (editingCourt && editingCourt.key) {
+        // Update existing court
+        await CourtAPI.updateCourt(editingCourt.courtId, editingCourt);
+        message.success("Court updated successfully");
+      } else {
+        // Add new court
+        await CourtAPI.createCourt(editingCourt);
+        message.success("Court added successfully");
+      }
+      setIsModalVisible(false);
+      setEditingCourt(null);
+      fetchInitialData(); // Fetch the updated list of courts
+    } catch (error) {
+      message.error("Failed to save court");
+      console.error("Failed to save court:", error);
     }
-    setEditingCourt(null);
   };
 
   const handleCancel = () => {
@@ -82,6 +108,33 @@ const ManagementCourt = () => {
 
   const handleDelete = (key) => {
     setCourts(courts.filter((court) => court.key !== key));
+  };
+
+  const handleCityChange = (cityId) => {
+    setEditingCourt({
+      ...editingCourt,
+      location: {
+        ...editingCourt.location,
+        district: {
+          ...editingCourt.location.district,
+          city: cities.find((city) => city.cityId === cityId),
+        },
+      },
+    });
+    fetchDistricts(cityId);
+  };
+
+  const handleDistrictChange = (districtId) => {
+    const selectedDistrict = districts.find(
+      (district) => district.districtId === districtId
+    );
+    setEditingCourt({
+      ...editingCourt,
+      location: {
+        ...editingCourt.location,
+        district: selectedDistrict,
+      },
+    });
   };
 
   const columns = [
@@ -192,42 +245,29 @@ const ManagementCourt = () => {
                 }
               />
             </Form.Item>
-            <Form.Item label="District">
-              <Input
-                value={editingCourt.location.district.districtName}
-                onChange={(e) =>
-                  setEditingCourt({
-                    ...editingCourt,
-                    location: {
-                      ...editingCourt.location,
-                      district: {
-                        ...editingCourt.location.district,
-                        districtName: e.target.value,
-                      },
-                    },
-                  })
-                }
-              />
-            </Form.Item>
             <Form.Item label="City">
-              <Input
-                value={editingCourt.location.district.city.cityName}
-                onChange={(e) =>
-                  setEditingCourt({
-                    ...editingCourt,
-                    location: {
-                      ...editingCourt.location,
-                      district: {
-                        ...editingCourt.location.district,
-                        city: {
-                          ...editingCourt.location.district.city,
-                          cityName: e.target.value,
-                        },
-                      },
-                    },
-                  })
-                }
-              />
+              <Select
+                value={editingCourt.location.district.city.cityId}
+                onChange={handleCityChange}
+              >
+                {cities.map((city) => (
+                  <Option key={city.cityId} value={city.cityId}>
+                    {city.cityName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item label="District">
+              <Select
+                value={editingCourt.location.district.districtId}
+                onChange={handleDistrictChange}
+              >
+                {districts.map((district) => (
+                  <Option key={district.districtId} value={district.districtId}>
+                    {district.districtName}
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
             <Form.Item label="Price">
               <Input

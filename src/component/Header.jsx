@@ -22,15 +22,23 @@ const Header = ({ isLoggedIn, onLogout }) => {
           <span>Email@Example.com</span>
         </div>
         <div className="flex space-x-4">
-          <a href="#privacy" className="hover:underline">
-            Privacy Policy
-          </a>
-          <a href="#terms" className="hover:underline">
-            Terms of Use
-          </a>
-          <a href="#refunds" className="hover:underline">
-            Sales and Refunds
-          </a>
+          {isLoggedIn ? (
+            <>
+              <Link
+                to="/profile"
+                className="bg-blue-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+              >
+                Profile
+              </Link>
+            </>
+          ) : (
+            <Link
+              to="/signup"
+              className="bg-green-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+            >
+              Sign up
+            </Link>
+          )}
         </div>
       </div>
       <div className="sticky top-0 bg-white z-20">

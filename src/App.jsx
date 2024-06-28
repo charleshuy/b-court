@@ -26,7 +26,7 @@ import SideBarv3 from "./adminpages/Sidebarv3";
 import ManagementUser from "./adminpages/ManagementUser";
 import ApproveCourt from "./adminpages/ApproveCourt";
 import { useState, useEffect } from "react";
-
+import Profile from "./userPages/Profile";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
@@ -67,6 +67,16 @@ function App() {
             <>
               <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <Shop />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+              <Profile />
               <Footer />
             </>
           }
