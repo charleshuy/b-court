@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
+import { Form, Input, Button, Upload, message, Table } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import UserAPI from "../api/UserAPI";
 import OrderAPI from "../api/OrderAPI";
 import { jwtDecode } from "jwt-decode";
-import { message } from "antd";
 
 const Profile = () => {
+  const [form] = Form.useForm();
   const [user, setUser] = useState(null);
   const [editableUser, setEditableUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [orders, setOrders] = useState([]);
+  const [imageUrl, setImageUrl] = useState("/path/to/default/avatar.jpg");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -31,6 +34,13 @@ const Profile = () => {
     fetchUser();
   }, []);
 
+  const handleUpload = ({ file, onSuccess }) => {
+    setTimeout(() => {
+      onSuccess("ok");
+      setImageUrl(URL.createObjectURL(file));
+    }, 1000);
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditableUser({ ...editableUser, [name]: value });
@@ -43,23 +53,59 @@ const Profile = () => {
       setUser(editableUser);
       setIsEditing(false);
     } catch (error) {
-      message.error("Failed to Update.");
+      message.error("Failed to update.");
       console.error("Failed to update user:", error);
     }
   };
+
+  const columns = [
+    { title: "Order ID", dataIndex: "orderId", key: "orderId" },
+    { title: "Date", dataIndex: "date", key: "date" },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      render: (text) =>
+        text.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+    },
+    { title: "Court", dataIndex: "courtName", key: "courtName" },
+    {
+      title: "Slot",
+      dataIndex: "slot",
+      key: "slot",
+      render: (_, record) =>
+        `${record.slotStart.split(":")[0]}:00 - ${
+          record.slotEnd.split(":")[0]
+        }:00 ${record.bookingDate}`,
+    },
+    {
+      title: "Payment Method",
+      dataIndex: "methodMethodName",
+      key: "methodMethodName",
+    },
+  ];
 
   if (!user) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-3xl font-semibold mb-4">Profile</h2>
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-md">
+      <div className="flex items-center justify-center space-x-4">
+        <img
+          src={imageUrl}
+          alt="Profile"
+          className="w-20 h-20 rounded-full object-cover"
+        />
+        <Upload customRequest={handleUpload} showUploadList={false}>
+          <Button icon={<UploadOutlined />}>Change Photo</Button>
+        </Upload>
+      </div>
+      <div className="mt-6 space-y-6">
         <div className="mb-4">
           <strong>Name:</strong>{" "}
           {isEditing ? (
-            <input
+            <Input
               type="text"
               name="name"
               value={editableUser.name}
@@ -73,7 +119,7 @@ const Profile = () => {
         <div className="mb-4">
           <strong>Email:</strong>{" "}
           {isEditing ? (
-            <input
+            <Input
               type="email"
               name="email"
               value={editableUser.email}
@@ -88,7 +134,7 @@ const Profile = () => {
         <div className="mb-4">
           <strong>Phone:</strong>{" "}
           {isEditing ? (
-            <input
+            <Input
               type="text"
               name="phone"
               value={editableUser.phone}
@@ -109,64 +155,29 @@ const Profile = () => {
         <div className="mb-4">
           <strong>Role:</strong> {user.role.roleName}
         </div>
-        {isEditing ? (
-          <button
-            onClick={handleSave}
-            className="bg-green-500 text-white px-4 py-2 rounded"
-          >
-            Save
-          </button>
-        ) : (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Edit
-          </button>
-        )}
-
-        <h3 className="text-2xl font-semibold mt-8 mb-4">Orders</h3>
-        {orders.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white">
-              <thead>
-                <tr>
-                  <th className="py-2 px-4 border-b">Order ID</th>
-                  <th className="py-2 px-4 border-b">Date</th>
-                  <th className="py-2 px-4 border-b">Amount</th>
-                  <th className="py-2 px-4 border-b">Court</th>
-                  <th className="py-2 px-4 border-b">Slot</th>
-                  <th className="py-2 px-4 border-b">Payment Method</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr key={order.orderId}>
-                    <td className="py-2 px-4 border-b">{order.orderId}</td>
-                    <td className="py-2 px-4 border-b">{order.date}</td>
-                    <td className="py-2 px-4 border-b">
-                      {order.amount.toLocaleString("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                      })}
-                    </td>
-                    <td className="py-2 px-4 border-b">{order.courtName}</td>
-                    <td className="py-2 px-4 border-b">{`${
-                      order.slotStart.split(":")[0]
-                    }:00 - ${order.slotEnd.split(":")[0]}:00
-                     ${order.bookingDate}`}</td>
-                    <td className="py-2 px-4 border-b">
-                      {order.methodMethodName}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div>No orders found</div>
-        )}
+        <Form.Item>
+          {isEditing ? (
+            <Button
+              type="primary"
+              onClick={handleSave}
+              className="bg-green-500"
+            >
+              Save
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              onClick={() => setIsEditing(true)}
+              className="bg-blue-500"
+            >
+              Edit
+            </Button>
+          )}
+        </Form.Item>
       </div>
+
+      <h3 className="text-2xl font-semibold mt-8 mb-4">Orders</h3>
+      <Table columns={columns} dataSource={orders} rowKey="orderId" />
     </div>
   );
 };

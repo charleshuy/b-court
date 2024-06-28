@@ -60,7 +60,7 @@ const ManagementCourt = () => {
     } else {
       // If adding new court
       setEditingCourt({
-        image: "",
+        courtImg: "",
         courtName: "",
         license: "",
         location: {
@@ -140,9 +140,15 @@ const ManagementCourt = () => {
   const columns = [
     {
       title: "Image",
-      dataIndex: "image",
-      key: "image",
-      render: (text) => <img src={text} alt="Court" style={{ width: 50 }} />,
+      dataIndex: "courtImg",
+      key: "courtImg",
+      render: (text) => (
+        <img
+          src={"http://localhost:5173/" + text}
+          alt="Court"
+          style={{ width: 50 }}
+        />
+      ),
     },
     {
       title: "Court Name",
@@ -206,9 +212,9 @@ const ManagementCourt = () => {
           <Form layout="vertical">
             <Form.Item label="Image URL">
               <Input
-                value={editingCourt.image}
+                value={editingCourt.courtImg}
                 onChange={(e) =>
-                  setEditingCourt({ ...editingCourt, image: e.target.value })
+                  setEditingCourt({ ...editingCourt, courtImg: e.target.value })
                 }
               />
             </Form.Item>

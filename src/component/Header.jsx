@@ -1,16 +1,57 @@
-import { Menu, Input } from "antd";
-import { AiOutlineSearch } from "react-icons/ai";
+import { Menu, Input, Avatar, Dropdown } from "antd";
+import {
+  AiOutlineSearch,
+  AiOutlineSetting,
+  AiOutlineLogout,
+} from "react-icons/ai";
 import { FiMapPin, FiMail } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import bad3Image from "../assets/images/bad3.png";
 import { jwtDecode } from "jwt-decode";
+import { CgProfile } from "react-icons/cg";
 
 const { SubMenu } = Menu;
 
 const Header = ({ isLoggedIn, onLogout }) => {
   const token = localStorage.getItem("token");
+  const userName = token ? jwtDecode(token).name : "";
   const decodedToken = token ? jwtDecode(token) : null;
   const roleName = decodedToken ? decodedToken.roleName : null;
+
+  const menu = (
+    <Menu>
+      <Menu.Item key="settings">
+        <a
+          href="#settings"
+          className="flex justify-start items-center space-x-2"
+        >
+          <AiOutlineSetting />
+          <span>Settings</span>
+        </a>
+      </Menu.Item>
+      <Menu.Item key="profile">
+        <a href="profile" className="flex justify-start items-center space-x-2">
+          <CgProfile />
+          <span>Profile</span>
+        </a>
+      </Menu.Item>
+      <Menu.Item key="staff">
+        <a
+          href="staff/check-in"
+          className="flex justify-start items-center space-x-2"
+        >
+          <CgProfile />
+          <span>Staff</span>
+        </a>
+      </Menu.Item>
+      <Menu.Item key="logout">
+        <div className="flex justify-start items-center space-x-2">
+          <AiOutlineLogout />
+          <button onClick={onLogout}>Logout</button>
+        </div>
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <header className="relative text-white">
@@ -22,23 +63,15 @@ const Header = ({ isLoggedIn, onLogout }) => {
           <span>Email@Example.com</span>
         </div>
         <div className="flex space-x-4">
-          {isLoggedIn ? (
-            <>
-              <Link
-                to="/profile"
-                className="bg-blue-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
-              >
-                Profile
-              </Link>
-            </>
-          ) : (
-            <Link
-              to="/signup"
-              className="bg-green-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
-            >
-              Sign up
-            </Link>
-          )}
+          <a href="#privacy" className="hover:underline">
+            Privacy Policy
+          </a>
+          <a href="#terms" className="hover:underline">
+            Terms of Use
+          </a>
+          <a href="#refunds" className="hover:underline">
+            Sales and Refunds
+          </a>
         </div>
       </div>
       <div className="sticky top-0 bg-white z-20">
@@ -95,12 +128,13 @@ const Header = ({ isLoggedIn, onLogout }) => {
                     Court
                   </Link>
                 )}
-                <button
-                  onClick={onLogout}
-                  className="bg-red-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
-                >
-                  Logout
-                </button>
+                <Dropdown overlay={menu} placement="bottomRight">
+                  <div className="flex items-center space-x-4 cursor-pointer">
+                    <Avatar>
+                      {userName ? userName.charAt(0).toUpperCase() : ""}
+                    </Avatar>
+                  </div>
+                </Dropdown>
               </>
             ) : (
               <Link
