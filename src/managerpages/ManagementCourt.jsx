@@ -10,7 +10,7 @@ const { Option } = Select;
 
 const ManagementCourt = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingCourt, setEditingCourt] = useState(null); // Use null for new court
+  const [editingCourt, setEditingCourt] = useState(null);
   const [courts, setCourts] = useState([]);
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -29,7 +29,6 @@ const ManagementCourt = () => {
         CourtAPI.getCourtsByUserId(userId),
         LocationAPI.getAllCities(),
       ]);
-
       setCourts(courtsData);
       setCities(citiesData);
     } catch (error) {
@@ -37,10 +36,6 @@ const ManagementCourt = () => {
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
 
   const fetchDistricts = async (cityId) => {
     try {
@@ -52,30 +47,35 @@ const ManagementCourt = () => {
     }
   };
 
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
   const showModal = (court) => {
     if (court) {
-      // If editing existing court
-      setEditingCourt({ ...court, courtId: court.courtId });
-      fetchDistricts(court.location.district.city.cityId);
+      setEditingCourt(court);
+      fetchDistricts(court.district.city.cityId);
     } else {
-      // If adding new court
+      const token = localStorage.getItem("token");
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.userId;
+
       setEditingCourt({
         courtImg: "",
         courtName: "",
         license: "",
-        location: {
-          address: "",
-          district: {
-            districtName: "",
-            districtId: "",
-            city: {
-              cityName: "",
-              cityId: "",
-            },
+        address: "",
+        district: {
+          districtId: "",
+          districtName: "",
+          city: {
+            cityId: "",
+            cityName: "",
           },
         },
         price: "",
-        status: false, // Assuming default status is inactive
+        status: false,
+        user: { userId },
       });
     }
     setIsModalVisible(true);
@@ -83,18 +83,18 @@ const ManagementCourt = () => {
 
   const handleOk = async () => {
     try {
-      if (editingCourt && editingCourt.key) {
-        // Update existing court
-        await CourtAPI.updateCourt(editingCourt.courtId, editingCourt);
+      const courtData = { ...editingCourt };
+
+      if (editingCourt && editingCourt.courtId) {
+        await CourtAPI.updateCourt(editingCourt.courtId, courtData);
         message.success("Court updated successfully");
       } else {
-        // Add new court
-        await CourtAPI.createCourt(editingCourt);
+        await CourtAPI.createCourt(courtData);
         message.success("Court added successfully");
       }
       setIsModalVisible(false);
       setEditingCourt(null);
-      fetchInitialData(); // Fetch the updated list of courts
+      fetchInitialData();
     } catch (error) {
       message.error("Failed to save court");
       console.error("Failed to save court:", error);
@@ -106,35 +106,39 @@ const ManagementCourt = () => {
     setEditingCourt(null);
   };
 
-  const handleDelete = (key) => {
-    setCourts(courts.filter((court) => court.key !== key));
+  const handleDelete = async (courtId) => {
+    try {
+      await CourtAPI.deleteCourt(courtId);
+      setCourts(courts.filter((court) => court.courtId !== courtId));
+      message.success("Court deleted successfully");
+    } catch (error) {
+      message.error("Failed to delete court");
+      console.error("Failed to delete court:", error);
+    }
   };
 
   const handleCityChange = (cityId) => {
-    setEditingCourt({
-      ...editingCourt,
-      location: {
-        ...editingCourt.location,
-        district: {
-          ...editingCourt.location.district,
-          city: cities.find((city) => city.cityId === cityId),
-        },
+    const city = cities.find((c) => c.cityId === cityId);
+    setEditingCourt((prevCourt) => ({
+      ...prevCourt,
+      district: {
+        ...prevCourt.district,
+        city: city || { cityId: "", cityName: "" },
       },
-    });
+    }));
     fetchDistricts(cityId);
   };
 
   const handleDistrictChange = (districtId) => {
-    const selectedDistrict = districts.find(
-      (district) => district.districtId === districtId
-    );
-    setEditingCourt({
-      ...editingCourt,
-      location: {
-        ...editingCourt.location,
-        district: selectedDistrict,
+    const district = districts.find((d) => d.districtId === districtId);
+    setEditingCourt((prevCourt) => ({
+      ...prevCourt,
+      district: district || {
+        districtId: "",
+        districtName: "",
+        city: prevCourt.district.city,
       },
-    });
+    }));
   };
 
   const columns = [
@@ -144,7 +148,7 @@ const ManagementCourt = () => {
       key: "courtImg",
       render: (text) => (
         <img
-          src={"http://localhost:5173/" + text}
+          src={`http://localhost:5173/${text}`}
           alt="Court"
           style={{ width: 50 }}
         />
@@ -157,10 +161,9 @@ const ManagementCourt = () => {
     },
     {
       title: "Location",
-      dataIndex: "location",
       key: "location",
-      render: (location) =>
-        `${location.address}, ${location.district.districtName}, ${location.district.city.cityName}`,
+      render: (record) =>
+        `${record.address}, ${record.district.districtName}, ${record.district.city.cityName}`,
     },
     {
       title: "Price",
@@ -182,7 +185,7 @@ const ManagementCourt = () => {
             <Button>View Slots</Button>
           </Link>
           <Button onClick={() => showModal(record)}>Edit</Button>
-          <Button onClick={() => handleDelete(record.key)}>Delete</Button>
+          <Button onClick={() => handleDelete(record.courtId)}>Delete</Button>
         </div>
       ),
     },
@@ -194,14 +197,14 @@ const ManagementCourt = () => {
         <h2 className="text-2xl font-bold">Courts</h2>
         <Button
           type="primary"
-          onClick={() => showModal(null)} // Null indicates adding new court
+          onClick={() => showModal(null)}
           icon={<PlusOutlined />}
           className="mb-4"
         >
           Add Court
         </Button>
       </div>
-      <Table columns={columns} dataSource={courts} />
+      <Table columns={columns} dataSource={courts} rowKey="courtId" />
       <Modal
         title={editingCourt ? "Edit Court" : "Request Add Court"}
         visible={isModalVisible}
@@ -239,21 +242,18 @@ const ManagementCourt = () => {
             </Form.Item>
             <Form.Item label="Address">
               <Input
-                value={editingCourt.location.address}
+                value={editingCourt.address}
                 onChange={(e) =>
                   setEditingCourt({
                     ...editingCourt,
-                    location: {
-                      ...editingCourt.location,
-                      address: e.target.value,
-                    },
+                    address: e.target.value,
                   })
                 }
               />
             </Form.Item>
             <Form.Item label="City">
               <Select
-                value={editingCourt.location.district.city.cityId}
+                value={editingCourt.district.city.cityId}
                 onChange={handleCityChange}
               >
                 {cities.map((city) => (
@@ -265,8 +265,9 @@ const ManagementCourt = () => {
             </Form.Item>
             <Form.Item label="District">
               <Select
-                value={editingCourt.location.district.districtId}
+                value={editingCourt.district.districtId}
                 onChange={handleDistrictChange}
+                disabled={!editingCourt.district.city.cityId}
               >
                 {districts.map((district) => (
                   <Option key={district.districtId} value={district.districtId}>

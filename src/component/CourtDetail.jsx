@@ -250,10 +250,9 @@ const CourtDetail = () => {
         </div>
         <div className="w-1/2 p-4">
           <h1 className="text-2xl font-bold">{court.courtName}</h1>
-          <p className="text-gray-600">{court.location.address}</p>
+          <p className="text-gray-600">{court.address}</p>
           <p className="text-gray-600">
-            {court.location.district.districtName},{" "}
-            {court.location.district.city.cityName}
+            {court.district.districtName}, {court.district.city.cityName}
           </p>
           <Rate disabled defaultValue={5} />
           <p className="text-lg font-semibold">

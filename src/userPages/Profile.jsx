@@ -3,6 +3,7 @@ import { Form, Input, Button, Upload, message, Table } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import UserAPI from "../api/UserAPI";
 import OrderAPI from "../api/OrderAPI";
+import FileAPI from "../api/FileAPI"; // Import FileAPI
 import { jwtDecode } from "jwt-decode";
 
 const Profile = () => {
@@ -26,6 +27,10 @@ const Profile = () => {
 
         const ordersResponse = await OrderAPI.getOrdersByUserId(userId);
         setOrders(ordersResponse);
+
+        // Fetch and set user's profile photo
+        const photoUrl = "http://localhost:8080/files/" + userResponse.fileId; // Assuming userId is used as fileId for simplicity
+        setImageUrl(photoUrl);
       } catch (error) {
         console.error("Failed to fetch user or orders:", error);
       }
@@ -34,11 +39,19 @@ const Profile = () => {
     fetchUser();
   }, []);
 
-  const handleUpload = ({ file, onSuccess }) => {
-    setTimeout(() => {
-      onSuccess("ok");
-      setImageUrl(URL.createObjectURL(file));
-    }, 1000);
+  const handleUpload = async ({ file }) => {
+    try {
+      const token = localStorage.getItem("token");
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.userId;
+
+      const fileId = await FileAPI.uploadFile(userId, file);
+      message.success("File uploaded successfully");
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to upload file:", error);
+      message.error("Failed to upload file.");
+    }
   };
 
   const handleInputChange = (e) => {

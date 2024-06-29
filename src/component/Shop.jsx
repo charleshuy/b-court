@@ -6,9 +6,9 @@ import CourtAPI from "../api/CourtAPI";
 
 const { Option } = Select;
 
-const getUniqueAddresses = (courts) => {
-  const addresses = courts.map((court) => court.location.district.districtName);
-  return [...new Set(addresses)];
+const getUniqueDistricts = (courts) => {
+  const districts = courts.map((court) => court.district.districtName);
+  return [...new Set(districts)];
 };
 
 const Shop = () => {
@@ -16,15 +16,14 @@ const Shop = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [filteredCourts, setFilteredCourts] = useState([]);
-  const [selectedAddresses, setSelectedAddresses] = useState([]);
-  const [selectedExtras, setSelectedExtras] = useState([]);
+  const [selectedDistricts, setSelectedDistricts] = useState([]);
 
   useEffect(() => {
     const fetchCourts = async () => {
       try {
         const response = await CourtAPI.getCourts();
         setCourts(response);
-        setFilteredCourts(response); // Initialize filteredCourts with the fetched data
+        setFilteredCourts(response);
       } catch (error) {
         console.error("Failed to fetch courts:", error);
       }
@@ -45,33 +44,24 @@ const Shop = () => {
     setPageSize(pageSize);
   };
 
-  const handleAddressChange = (checkedValues) => {
-    setSelectedAddresses(checkedValues);
-    filterCourts(checkedValues, selectedExtras);
+  const handleDistrictChange = (checkedValues) => {
+    setSelectedDistricts(checkedValues);
+    filterCourts(checkedValues);
   };
 
-  const handleExtrasChange = (checkedValues) => {
-    setSelectedExtras(checkedValues);
-    filterCourts(selectedAddresses, checkedValues);
-  };
-
-  const filterCourts = (addresses, extras) => {
+  const filterCourts = (districts) => {
     let filtered = courts;
 
-    if (addresses.length > 0) {
+    if (districts.length > 0) {
       filtered = filtered.filter((court) =>
-        addresses.includes(court.location.district.districtName)
+        districts.includes(court.district.districtName)
       );
-    }
-
-    if (extras.length > 0) {
-      // Apply extra filters if needed
     }
 
     setFilteredCourts(filtered);
   };
 
-  const uniqueAddresses = getUniqueAddresses(courts);
+  const uniqueDistricts = getUniqueDistricts(courts);
 
   return (
     <div className="container mx-auto py-8">
@@ -88,8 +78,8 @@ const Shop = () => {
               <div className="mb-4">
                 <h3 className="text-2xl font-semibold mb-2">Location</h3>
                 <Checkbox.Group
-                  options={uniqueAddresses}
-                  onChange={handleAddressChange}
+                  options={uniqueDistricts}
+                  onChange={handleDistrictChange}
                   className="flex flex-col"
                 />
               </div>
@@ -119,7 +109,7 @@ const Shop = () => {
                   className="relative bg-white rounded-lg shadow-lg overflow-hidden border-2 border-transparent hover:border-orange-500 transition-all duration-300"
                 >
                   <img
-                    src={court.img} // Ensure you have an image field or adjust accordingly
+                    src={court.courtImg}
                     alt={court.courtName}
                     className="w-full h-48 object-cover"
                   />
@@ -136,7 +126,7 @@ const Shop = () => {
                         })}
                       </p>
                       <p className="text-gray-500 mt-2">
-                        {`${court.location.address}, ${court.location.district.districtName}, ${court.location.district.city.cityName}`}
+                        {`${court.address}, ${court.district.districtName}, ${court.district.city.cityName}`}
                       </p>
                       <Link to={`/court-detail/${court.courtId}`}>
                         <button className="mt-4 bg-yellow-500 text-white px-4 py-2 rounded-full w-full">

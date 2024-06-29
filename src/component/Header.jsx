@@ -30,10 +30,13 @@ const Header = ({ isLoggedIn, onLogout }) => {
         </a>
       </Menu.Item>
       <Menu.Item key="profile">
-        <a href="profile" className="flex justify-start items-center space-x-2">
+        <Link
+          to="/profile"
+          className="flex justify-start items-center space-x-2"
+        >
           <CgProfile />
           <span>Profile</span>
-        </a>
+        </Link>
       </Menu.Item>
       <Menu.Item key="staff">
         <a
