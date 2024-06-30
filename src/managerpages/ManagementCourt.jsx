@@ -206,7 +206,7 @@ const ManagementCourt = () => {
       </div>
       <Table columns={columns} dataSource={courts} rowKey="courtId" />
       <Modal
-        title={editingCourt ? "Edit Court" : "Request Add Court"}
+        title={editingCourt ? "Court" : "Court"}
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}

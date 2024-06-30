@@ -116,10 +116,12 @@ const CourtDetail = () => {
   }, []);
 
   const getSlotBookingInfo = (slot) => {
-    const start = orders.some((order) =>
+    const filteredOrders = orders.filter((order) => order.status !== false);
+
+    const start = filteredOrders.some((order) =>
       moment(slot, "HH:mm").isSame(moment(order.slotStart, "HH:mm"))
     );
-    const end = orders.some((order) =>
+    const end = filteredOrders.some((order) =>
       moment(slot, "HH:mm").isSame(moment(order.slotEnd, "HH:mm"))
     );
 
@@ -127,7 +129,7 @@ const CourtDetail = () => {
     if (start) return "start";
     if (end) return "end";
     if (
-      orders.some((order) =>
+      filteredOrders.some((order) =>
         moment(slot, "HH:mm").isBetween(
           moment(order.slotStart, "HH:mm"),
           moment(order.slotEnd, "HH:mm"),
@@ -142,7 +144,7 @@ const CourtDetail = () => {
   };
 
   const handleDateChange = async (date) => {
-    const formattedDate = date.format("YYYY-MM-D");
+    const formattedDate = date.format("YYYY-MM-DD"); // Format the date here
     setSelectedDate(date);
     setOrderData((prev) => ({ ...prev, bookingDate: formattedDate }));
 
@@ -216,11 +218,15 @@ const CourtDetail = () => {
     const fetchOrders = async () => {
       if (selectedDate && orderData.court.courtId) {
         try {
-          const orders = await OrderAPI.getOrdersByCourtAndDate(
-            orderData.court.courtId,
-            orderData.bookingDate
+          const fetchedOrders = await OrderAPI.getOrdersByCourtAndDate(
+            id,
+            selectedDate.format("YYYY-MM-DD")
           );
-          setOrders(orders);
+          // Filter out canceled orders here
+          const filteredOrders = fetchedOrders.filter(
+            (order) => order.status !== false
+          );
+          setOrders(filteredOrders);
         } catch (error) {
           console.error("Failed to fetch orders:", error);
         }

@@ -1,46 +1,64 @@
-import { useState } from "react";
-import { Table, Button, Modal, Form, Input } from "antd";
+import { useState, useEffect } from "react";
+import { Table, Button, Select, Form, message } from "antd"; // Import message from antd
 import { PlusOutlined } from "@ant-design/icons";
+import UserAPI from "../api/UserAPI";
+import CourtAPI from "../api/CourtAPI";
+import { jwtDecode } from "jwt-decode";
+
+const { Option } = Select;
 
 const ManagementStaff = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingStaff, setEditingStaff] = useState(null);
-  const [staff, setStaff] = useState([
-    {
-      key: "1",
-      userId: "1",
-      address: "123 Main St",
-      email: "john@example.com",
-      name: "John Doe",
-      phone: "123-456-7890",
-    },
-  ]);
+  const [staff, setStaff] = useState([]);
+  const [courts, setCourts] = useState([]);
 
-  const showModal = (staffMember) => {
-    setEditingStaff(staffMember);
-    setIsModalVisible(true);
-  };
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const decodedToken = jwtDecode(token);
+    const managerId = decodedToken.userId;
 
-  const handleOk = () => {
-    setIsModalVisible(false);
-    if (editingStaff.key) {
-      const updatedStaff = staff.map((s) =>
-        s.key === editingStaff.key ? editingStaff : s
+    const fetchUsersByManagerId = async () => {
+      try {
+        const response = await UserAPI.getUsersByManagerId(managerId);
+        setStaff(response.content);
+      } catch (error) {
+        console.error("Error fetching users by managerId:", error);
+      }
+    };
+
+    const fetchCourtsByManagerId = async () => {
+      try {
+        const response = await CourtAPI.getCourtsByUserId(managerId);
+        setCourts(response);
+      } catch (error) {
+        console.error("Error fetching courts by managerId:", error);
+      }
+    };
+
+    fetchUsersByManagerId();
+    fetchCourtsByManagerId();
+  }, []);
+
+  const handleSaveAssignedCourt = async (userId, courtId) => {
+    try {
+      const updatedUser = {
+        userId: userId,
+        assignedCourt: {
+          courtId: courtId,
+        },
+      };
+      await UserAPI.updateUser(updatedUser);
+      // Update staff state or handle success
+      const updatedStaff = staff.map((user) =>
+        user.userId === userId ? { ...user, courtId: courtId } : user
       );
       setStaff(updatedStaff);
-    } else {
-      setStaff([...staff, { ...editingStaff, key: staff.length + 1 }]);
+      message.success("Assigned court saved successfully"); // Success message
+      console.log("Updated User:", updatedUser); // Log the updated user object
+    } catch (error) {
+      console.error("Error updating assigned court:", error);
+      message.error("Failed to save assigned court"); // Error message
+      // Handle error
     }
-    setEditingStaff(null);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setEditingStaff(null);
-  };
-
-  const handleDelete = (key) => {
-    setStaff(staff.filter((s) => s.key !== key));
   };
 
   const columns = [
@@ -48,11 +66,6 @@ const ManagementStaff = () => {
       title: "Name",
       dataIndex: "name",
       key: "name",
-    },
-    {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
     },
     {
       title: "Email",
@@ -65,21 +78,29 @@ const ManagementStaff = () => {
       key: "phone",
     },
     {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <div>
-          <Button type="primary" onClick={() => showModal(record)}>
-            Edit
-          </Button>
-          <Button
-            type="danger"
-            onClick={() => handleDelete(record.key)}
-            className="ml-2"
-          >
-            Delete
-          </Button>
-        </div>
+      title: "Assigned Court Name",
+      key: "assignedCourtName",
+      render: (text, record) => (
+        <Form
+          onFinish={(values) =>
+            handleSaveAssignedCourt(record.userId, values.assignedCourtId)
+          }
+          initialValues={{ assignedCourtId: record.assignedCourtId }}
+        >
+          <Form.Item name="assignedCourtId" noStyle>
+            <Select
+              onChange={(value) =>
+                handleSaveAssignedCourt(record.userId, value)
+              }
+            >
+              {courts.map((court) => (
+                <Option key={court.courtId} value={court.courtId}>
+                  {court.courtName}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
       ),
     },
   ];
@@ -88,59 +109,8 @@ const ManagementStaff = () => {
     <div>
       <div className="flex justify-between items-center p-4">
         <h2 className="text-2xl font-bold">Staff Management</h2>
-        <Button
-          type="primary"
-          onClick={() => showModal({})}
-          icon={<PlusOutlined />}
-        >
-          Add Staff
-        </Button>
       </div>
       <Table columns={columns} dataSource={staff} />
-      <Modal
-        title={editingStaff && editingStaff.key ? "Edit Staff" : "Add Staff"}
-        visible={isModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
-      >
-        {editingStaff && (
-          <Form layout="vertical">
-            <Form.Item label="Name">
-              <Input
-                value={editingStaff.name}
-                onChange={(e) =>
-                  setEditingStaff({ ...editingStaff, name: e.target.value })
-                }
-              />
-            </Form.Item>
-            <Form.Item label="Address">
-              <Input
-                value={editingStaff.address}
-                onChange={(e) =>
-                  setEditingStaff({ ...editingStaff, address: e.target.value })
-                }
-              />
-            </Form.Item>
-            <Form.Item label="Email">
-              <Input
-                value={editingStaff.email}
-                onChange={(e) =>
-                  setEditingStaff({ ...editingStaff, email: e.target.value })
-                }
-              />
-            </Form.Item>
-
-            <Form.Item label="Phone">
-              <Input
-                value={editingStaff.phone}
-                onChange={(e) =>
-                  setEditingStaff({ ...editingStaff, phone: e.target.value })
-                }
-              />
-            </Form.Item>
-          </Form>
-        )}
-      </Modal>
     </div>
   );
 };

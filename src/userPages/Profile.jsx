@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react";
-import { Form, Input, Button, Upload, message, Table } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import {
+  Form,
+  Input,
+  Button,
+  Upload,
+  message,
+  Table,
+  Modal,
+  DatePicker,
+} from "antd";
+import { UploadOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import UserAPI from "../api/UserAPI";
 import OrderAPI from "../api/OrderAPI";
-import FileAPI from "../api/FileAPI"; // Import FileAPI
+import FileAPI from "../api/FileAPI";
 import { jwtDecode } from "jwt-decode";
+
+const { confirm } = Modal;
 
 const Profile = () => {
   const [form] = Form.useForm();
@@ -13,6 +24,7 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [orders, setOrders] = useState([]);
   const [imageUrl, setImageUrl] = useState("/path/to/default/avatar.jpg");
+  const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -38,6 +50,43 @@ const Profile = () => {
 
     fetchUser();
   }, []);
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken.userId;
+
+      // First confirmation
+      confirm({
+        title: "Are you sure you want to cancel this order?",
+        icon: <ExclamationCircleOutlined />,
+        okText: "Yes",
+        okType: "danger",
+        cancelText: "No",
+        onOk: async () => {
+          try {
+            await OrderAPI.cancelOrder(orderId, userId);
+            message.success("Order cancelled successfully");
+            const updatedOrders = orders.map((order) =>
+              order.orderId === orderId ? { ...order, status: false } : order
+            );
+            setOrders(updatedOrders);
+            window.location.reload();
+          } catch (error) {
+            console.error("Failed to cancel order:", error);
+            message.error("Failed to cancel order.");
+          }
+        },
+        onCancel() {
+          console.log("Cancel");
+        },
+      });
+    } catch (error) {
+      console.error("Failed to cancel order:", error);
+      message.error("Failed to cancel order.");
+    }
+  };
 
   const handleUpload = async ({ file }) => {
     try {
@@ -71,9 +120,28 @@ const Profile = () => {
     }
   };
 
+  const handleDateChange = (date, dateString) => {
+    setSelectedDate(dateString); // Store selected date as a string
+  };
+
+  const getStatusText = (status) => {
+    if (status === null) {
+      return "Pending";
+    } else if (status === true) {
+      return "Confirmed";
+    } else if (status === false) {
+      return "Canceled";
+    } else {
+      return "Unknown";
+    }
+  };
+
+  const filteredOrders = selectedDate
+    ? orders.filter((order) => order.bookingDate === selectedDate)
+    : orders;
+
   const columns = [
-    { title: "Order ID", dataIndex: "orderId", key: "orderId" },
-    { title: "Date", dataIndex: "date", key: "date" },
+    { title: "Date", dataIndex: "bookingDate", key: "date" },
     {
       title: "Amount",
       dataIndex: "amount",
@@ -89,12 +157,37 @@ const Profile = () => {
       render: (_, record) =>
         `${record.slotStart.split(":")[0]}:00 - ${
           record.slotEnd.split(":")[0]
-        }:00 ${record.bookingDate}`,
+        }:00`,
     },
     {
       title: "Payment Method",
       dataIndex: "methodMethodName",
       key: "methodMethodName",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => <span>{getStatusText(status)}</span>,
+    },
+    {
+      title: "Actions",
+      dataIndex: "status",
+      key: "actions",
+      render: (status, record) => {
+        if (status === null) {
+          return (
+            <Button
+              type="primary"
+              onClick={() => handleCancelOrder(record.orderId)}
+            >
+              Cancel
+            </Button>
+          );
+        } else {
+          return null; // Return null for non-pending orders
+        }
+      },
     },
   ];
 
@@ -159,12 +252,28 @@ const Profile = () => {
           )}
         </div>
         <div className="mb-4">
+          <strong>Ban Count:</strong>{" "}
+          {isEditing ? (
+            <Input
+              type="text"
+              name="phone"
+              value={editableUser.banCount}
+              onChange={handleInputChange}
+              className="border rounded px-2 py-1"
+              disabled
+            />
+          ) : (
+            user.banCount
+          )}
+        </div>
+        <div className="mb-4">
           <strong>Wallet Balance:</strong>{" "}
           {editableUser.walletAmount.toLocaleString("en-US", {
             style: "currency",
             currency: "USD",
           })}
         </div>
+
         <div className="mb-4">
           <strong>Role:</strong> {user.role.roleName}
         </div>
@@ -190,7 +299,8 @@ const Profile = () => {
       </div>
 
       <h3 className="text-2xl font-semibold mt-8 mb-4">Orders</h3>
-      <Table columns={columns} dataSource={orders} rowKey="orderId" />
+      <DatePicker onChange={handleDateChange} />
+      <Table columns={columns} dataSource={filteredOrders} rowKey="orderId" />
     </div>
   );
 };

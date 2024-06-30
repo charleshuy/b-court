@@ -9,14 +9,36 @@ import { Link } from "react-router-dom";
 import bad3Image from "../assets/images/bad3.png";
 import { jwtDecode } from "jwt-decode";
 import { CgProfile } from "react-icons/cg";
-
+import { useEffect, useState } from "react";
 const { SubMenu } = Menu;
-
+import UserAPI from "../api/UserAPI";
 const Header = ({ isLoggedIn, onLogout }) => {
   const token = localStorage.getItem("token");
   const userName = token ? jwtDecode(token).name : "";
   const decodedToken = token ? jwtDecode(token) : null;
   const roleName = decodedToken ? decodedToken.roleName : null;
+  const userId = decodedToken ? decodedToken.userId : null; // Added userId
+
+  const [imageUrl, setImageUrl] = useState("/path/to/default/avatar.jpg"); // State for avatar URL
+
+  useEffect(() => {
+    const fetchAvatar = async () => {
+      try {
+        // Fetch user's profile photo
+        const userResponse = await UserAPI.getUserById(userId);
+        const photoUrl = "http://localhost:8080/files/" + userResponse.fileId; // Assuming fileId is used as avatar ID
+        setImageUrl(photoUrl);
+      } catch (error) {
+        console.error("Failed to fetch avatar:", error);
+        // Set default avatar URL in case of error
+        setImageUrl("/path/to/default/avatar.jpg");
+      }
+    };
+
+    if (userId) {
+      fetchAvatar();
+    }
+  }, [userId]);
 
   const menu = (
     <Menu>
@@ -128,14 +150,20 @@ const Header = ({ isLoggedIn, onLogout }) => {
                     to="/manager/courts"
                     className="bg-blue-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
                   >
-                    Court
+                    Manager
+                  </Link>
+                )}
+                {roleName === "Staff" && (
+                  <Link
+                    to="/staff/check-in"
+                    className="bg-blue-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+                  >
+                    Staff
                   </Link>
                 )}
                 <Dropdown overlay={menu} placement="bottomRight">
                   <div className="flex items-center space-x-4 cursor-pointer">
-                    <Avatar>
-                      {userName ? userName.charAt(0).toUpperCase() : ""}
-                    </Avatar>
+                    <Avatar src={imageUrl} /> {/* Display avatar */}
                   </div>
                 </Dropdown>
               </>

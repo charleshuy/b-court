@@ -42,6 +42,13 @@ const UserAPI = {
     const response = await apiClient.put("/users", userData);
     return response.data;
   },
+
+  getUsersByManagerId: async (managerId, page = 0, size = 10) => {
+    const response = await apiClient.get(
+      `/users/manager/${managerId}?page=${page}&size=${size}`
+    );
+    return response.data;
+  },
 };
 
 export default UserAPI;

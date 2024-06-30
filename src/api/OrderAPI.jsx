@@ -31,6 +31,17 @@ const OrderAPI = {
       throw error;
     }
   },
+  getOrdersByCourtId: async (courtId, page = 0, size = 10) => {
+    try {
+      const response = await apiClient.get(`/orders/court/${courtId}`, {
+        params: { page, size },
+      });
+      return response.data.content;
+    } catch (error) {
+      console.error(`Can't fetch orders for court ${courtId}:`, error);
+      throw error;
+    }
+  },
 
   deleteOrderById: async (orderId) => {
     try {
@@ -60,6 +71,29 @@ const OrderAPI = {
         `Can't fetch orders for court ${courtId} and date ${bookingDate}:`,
         error
       );
+      throw error;
+    }
+  },
+  updateOrder: async (orderId, updatedOrderData) => {
+    try {
+      const response = await apiClient.put(
+        `/orders/${orderId}`,
+        updatedOrderData
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Can't update order ${orderId}:`, error);
+      throw error;
+    }
+  },
+  cancelOrder: async (orderId, userId) => {
+    try {
+      const response = await apiClient.put(`/orders/cancel/${orderId}`, null, {
+        params: { userId },
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Can't cancel order ${orderId}:`, error);
       throw error;
     }
   },
