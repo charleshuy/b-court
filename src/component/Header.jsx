@@ -170,7 +170,7 @@ const Header = ({ isLoggedIn, onLogout }) => {
             ) : (
               <Link
                 to="/login"
-                className="bg-green-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+                className="bg-green-500 hover:bg-orange-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
               >
                 Sign In
               </Link>
