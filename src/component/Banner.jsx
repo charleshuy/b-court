@@ -21,7 +21,7 @@ const Banner = () => {
               placeholder="Search"
               style={{ width: "300px" }}
             />
-            <button className="bg-green-500 hover:bg-orange-500 text-white px-8 py-4 h-10 flex items-center justify-center rounded-full">
+            <button className="bg-green-500 text-white px-6 py-2 rounded-full">
               Submit Now
             </button>
           </div>
