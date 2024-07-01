@@ -109,7 +109,7 @@ const Shop = () => {
                   className="relative bg-white rounded-lg shadow-lg overflow-hidden border-2 border-transparent hover:border-orange-500 transition-all duration-300"
                 >
                   <img
-                    src={court.courtImg}
+                    src={`http://localhost:8080/files/${court.fileId}`}
                     alt={court.courtName}
                     className="w-full h-48 object-cover"
                   />

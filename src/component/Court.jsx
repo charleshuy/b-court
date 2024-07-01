@@ -30,7 +30,7 @@ const Court = () => {
           >
             <div className="overflow-hidden">
               <img
-                src={court.courtImg} // Use courtImg from the court data
+                src={`http://localhost:8080/files/${court.fileId}`}
                 alt={court.courtName}
                 className="w-full h-48 object-cover transform transition-transform duration-300 hover:scale-110"
               />

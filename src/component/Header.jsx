@@ -42,15 +42,6 @@ const Header = ({ isLoggedIn, onLogout }) => {
 
   const menu = (
     <Menu>
-      <Menu.Item key="settings">
-        <a
-          href="#settings"
-          className="flex justify-start items-center space-x-2"
-        >
-          <AiOutlineSetting />
-          <span>Settings</span>
-        </a>
-      </Menu.Item>
       <Menu.Item key="profile">
         <Link
           to="/profile"
@@ -60,15 +51,7 @@ const Header = ({ isLoggedIn, onLogout }) => {
           <span>Profile</span>
         </Link>
       </Menu.Item>
-      <Menu.Item key="staff">
-        <a
-          href="staff/check-in"
-          className="flex justify-start items-center space-x-2"
-        >
-          <CgProfile />
-          <span>Staff</span>
-        </a>
-      </Menu.Item>
+
       <Menu.Item key="logout">
         <div className="flex justify-start items-center space-x-2">
           <AiOutlineLogout />
@@ -170,7 +153,7 @@ const Header = ({ isLoggedIn, onLogout }) => {
             ) : (
               <Link
                 to="/login"
-                className="bg-green-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+                className="bg-green-500 hover:bg-orange-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
               >
                 Sign In
               </Link>

@@ -10,9 +10,7 @@ const menu = (
     <Menu.Item key="0">
       <a href="/profile">Profile</a>
     </Menu.Item>
-    <Menu.Item key="1">
-      <a href="#settings">Settings</a>
-    </Menu.Item>
+
     <Menu.Divider />
     <Menu.Item key="3">
       <a onClick={handleLogout} href="/">
@@ -32,7 +30,7 @@ const Headerv2 = () => {
         className="mr-4"
         prefix={<SearchOutlined />}
       />
-      <Dropdown overlay={menu} trigger={["click"]}>
+      <Dropdown overlay={menu} placement="bottomRight">
         <Button
           className="ant-dropdown-link flex items-center"
           onClick={(e) => e.preventDefault()}

@@ -11,6 +11,7 @@ import { jwtDecode } from "jwt-decode";
 const { Option } = Select;
 
 const timeSlots = [
+  "05:00",
   "06:00",
   "07:00",
   "08:00",
@@ -26,6 +27,9 @@ const timeSlots = [
   "18:00",
   "19:00",
   "20:00",
+  "21:00",
+  "22:00",
+  "23:00",
 ];
 
 const CourtDetail = () => {
@@ -249,7 +253,7 @@ const CourtDetail = () => {
       <div className="flex">
         <div className="w-1/2 p-4">
           <img
-            src={court.img || "src/assets/images/default_court.png"}
+            src={`http://localhost:8080/files/${court.fileId}`}
             alt={court.courtName}
             className="w-full h-64 object-cover rounded-lg mb-4"
           />
@@ -295,17 +299,17 @@ const CourtDetail = () => {
 
               if (bookingInfo === "start") {
                 slotStyle.background =
-                  "linear-gradient(to right, green 50%, red 50%)";
+                  "linear-gradient(to right, rgba(0, 128, 0, 0.5) 50%, #ccc 50%)";
               } else if (bookingInfo === "end") {
                 slotStyle.background =
-                  "linear-gradient(to right, red 50%, green 50%)";
+                  "linear-gradient(to right, #ccc 50%, rgba(0, 128, 0, 0.5) 50%)";
               } else if (bookingInfo === "startEnd") {
                 slotStyle.background =
-                  "linear-gradient(to right, red 50%, red 50%)";
+                  "linear-gradient(to right, #ccc 50%, #ccc 50%)";
               } else if (bookingInfo === "middle") {
-                slotStyle.background = "red";
+                slotStyle.background = "#ccc";
               } else {
-                slotStyle.background = "green";
+                slotStyle.background = "rgba(0, 128, 0, 0.5)";
               }
 
               return (

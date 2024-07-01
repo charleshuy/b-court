@@ -5,9 +5,10 @@ import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import CourtAPI from "../api/CourtAPI";
 import LocationAPI from "../api/LocationAPI";
-
+import { UploadOutlined } from "@ant-design/icons";
+import { Tooltip } from "antd";
 const { Option } = Select;
-
+import FileAPI from "../api/FileAPI";
 const ManagementCourt = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCourt, setEditingCourt] = useState(null);
@@ -36,6 +37,22 @@ const ManagementCourt = () => {
       console.error(error);
     }
   };
+  const handleFileUpload = async (file, courtId) => {
+    try {
+      if (!courtId) {
+        throw new Error("Court ID not available for file upload.");
+      }
+
+      const uploadResponse = await FileAPI.uploadFileCourt(courtId, file);
+
+      // Handle the response as needed (e.g., update court image)
+      message.success("File uploaded successfully");
+      fetchInitialData(); // Update court data after successful upload
+    } catch (error) {
+      message.error("Failed to upload file.");
+      console.error("Failed to upload file:", error);
+    }
+  };
 
   const fetchDistricts = async (cityId) => {
     try {
@@ -61,7 +78,6 @@ const ManagementCourt = () => {
       const userId = decodedToken.userId;
 
       setEditingCourt({
-        courtImg: "",
         courtName: "",
         license: "",
         address: "",
@@ -144,16 +160,99 @@ const ManagementCourt = () => {
   const columns = [
     {
       title: "Image",
-      dataIndex: "courtImg",
-      key: "courtImg",
-      render: (text) => (
-        <img
-          src={`http://localhost:5173/${text}`}
-          alt="Court"
-          style={{ width: 50 }}
-        />
+      dataIndex: "fileId",
+      key: "fileId",
+      render: (fileId, record) => (
+        <div style={{ position: "relative", width: 50, height: 50 }}>
+          {fileId ? (
+            <>
+              <img
+                src={`http://localhost:8080/files/${fileId}`}
+                alt="Court"
+                style={{
+                  width: 50,
+                  height: 50,
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                }}
+              />
+              <Tooltip title="Change Image" placement="bottom">
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    opacity: 0,
+                    transition: "opacity 0.3s",
+                    cursor: "pointer",
+                    borderRadius: "50%",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+                  onClick={() => {
+                    // Trigger file upload dialog
+                    const fileInput = document.createElement("input");
+                    fileInput.type = "file";
+                    fileInput.accept = "image/*";
+                    fileInput.onchange = (e) => {
+                      const file = e.target.files[0];
+                      handleFileUpload(file, record.courtId);
+                    };
+                    fileInput.click();
+                  }}
+                >
+                  <UploadOutlined style={{ color: "#fff", fontSize: 18 }} />
+                </div>
+              </Tooltip>
+            </>
+          ) : (
+            <>
+              <Tooltip title="Upload Image" placement="bottom">
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    opacity: 0,
+                    transition: "opacity 0.3s",
+                    cursor: "pointer",
+                    borderRadius: "50%",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+                  onClick={() => {
+                    // Trigger file upload dialog
+                    const fileInput = document.createElement("input");
+                    fileInput.type = "file";
+                    fileInput.accept = "image/*";
+                    fileInput.onchange = (e) => {
+                      const file = e.target.files[0];
+                      handleFileUpload(file, record.courtId);
+                    };
+                    fileInput.click();
+                  }}
+                >
+                  <UploadOutlined style={{ color: "#fff", fontSize: 18 }} />
+                </div>
+              </Tooltip>
+            </>
+          )}
+        </div>
       ),
     },
+
     {
       title: "Court Name",
       dataIndex: "courtName",
@@ -181,8 +280,8 @@ const ManagementCourt = () => {
       key: "action",
       render: (_, record) => (
         <div className="flex space-x-4">
-          <Link to="/manager/slots">
-            <Button>View Slots</Button>
+          <Link to="/manager/orders">
+            <Button>View Orders</Button>
           </Link>
           <Button onClick={() => showModal(record)}>Edit</Button>
           <Button onClick={() => handleDelete(record.courtId)}>Delete</Button>
@@ -213,14 +312,6 @@ const ManagementCourt = () => {
       >
         {editingCourt !== null && (
           <Form layout="vertical">
-            <Form.Item label="Image URL">
-              <Input
-                value={editingCourt.courtImg}
-                onChange={(e) =>
-                  setEditingCourt({ ...editingCourt, courtImg: e.target.value })
-                }
-              />
-            </Form.Item>
             <Form.Item label="Court Name">
               <Input
                 value={editingCourt.courtName}
