@@ -7,10 +7,11 @@ const Banner = () => {
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between mt-8">
         <div className="flex flex-col items-center md:items-start space-y-4 md:w-1/2">
           <div className="flex flex-col items-center md:items-start space-y-2 my-4">
-            <p className="text-yellow-400 text-xl font-bold">
+            <p className="text-amber-500 text-xl font-bold">
               With easy booking and payment
             </p>
-            <h1 className="text-6xl font-bold text-center md:text-left">
+
+            <h1 className="text-6xl font-bold text-center md:text-left text-amber-500">
               Book Your Court and Start Playing Today
             </h1>
           </div>
@@ -21,7 +22,7 @@ const Banner = () => {
               placeholder="Search"
               style={{ width: "300px" }}
             />
-            <button className="bg-green-500 hover:bg-orange-500 text-white px-8 py-4 h-10 flex items-center justify-center rounded-full">
+            <button className="bg-lime-500 hover:bg-amber-500 text-white px-8 py-4 h-10 flex items-center justify-center rounded-full">
               Submit Now
             </button>
           </div>

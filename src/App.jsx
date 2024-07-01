@@ -55,7 +55,6 @@ function App() {
               <Court />
               <PromotionalCard />
               <Banner2 />
-              <CourtsOnSale />
               <Testimonials />
               <Footer />
             </>

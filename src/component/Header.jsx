@@ -80,7 +80,7 @@ const Header = ({ isLoggedIn, onLogout }) => {
 
   return (
     <header className="sticky top-0 z-20 bg-white">
-      <div className="container mx-auto p-4 flex justify-between items-center bg-green-500 rounded-xl relative z-10 text-white">
+      <div className="container mx-auto p-4 flex justify-between items-center bg-lime-500 rounded-xl relative z-10 text-white">
         <div className="flex items-center space-x-4">
           <FiMapPin className="text-xl" />
           <span>123 Street, New York</span>
@@ -170,7 +170,7 @@ const Header = ({ isLoggedIn, onLogout }) => {
             ) : (
               <Link
                 to="/login"
-                className="bg-green-500 hover:bg-orange-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+                className="bg-lime-500 hover:bg-amber-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
               >
                 Sign In
               </Link>
