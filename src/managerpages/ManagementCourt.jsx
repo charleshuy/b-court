@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, Select, message } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  ExclamationCircleOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import CourtAPI from "../api/CourtAPI";
 import LocationAPI from "../api/LocationAPI";
-import { UploadOutlined } from "@ant-design/icons";
+import FileAPI from "../api/FileAPI";
 import { Tooltip } from "antd";
 const { Option } = Select;
-import FileAPI from "../api/FileAPI";
+const { confirm } = Modal;
+
 const ManagementCourt = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingCourt, setEditingCourt] = useState(null);
@@ -37,6 +42,7 @@ const ManagementCourt = () => {
       console.error(error);
     }
   };
+
   const handleFileUpload = async (file, courtId) => {
     try {
       if (!courtId) {
@@ -122,7 +128,23 @@ const ManagementCourt = () => {
     setEditingCourt(null);
   };
 
-  const handleDelete = async (courtId) => {
+  const handleDelete = (courtId) => {
+    confirm({
+      title: "Are you sure you want to delete this court?",
+      icon: <ExclamationCircleOutlined />,
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk() {
+        deleteCourt(courtId);
+      },
+      onCancel() {
+        console.log("Cancel");
+      },
+    });
+  };
+
+  const deleteCourt = async (courtId) => {
     try {
       await CourtAPI.deleteCourt(courtId);
       setCourts(courts.filter((court) => court.courtId !== courtId));
@@ -305,7 +327,7 @@ const ManagementCourt = () => {
       </div>
       <Table columns={columns} dataSource={courts} rowKey="courtId" />
       <Modal
-        title={editingCourt ? "Court" : "Court"}
+        title={editingCourt ? "Edit Court" : "Add Court"}
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}

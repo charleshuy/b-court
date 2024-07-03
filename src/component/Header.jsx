@@ -103,29 +103,10 @@ const Header = ({ isLoggedIn, onLogout }) => {
               <Link to="/">Home</Link>
             </Menu.Item>
             <Menu.Item key="shop">
-              <Link to="/shop">Shop</Link>
-            </Menu.Item>
-            <Menu.Item key="shop-detail">
-              <a href="#shop-detail">Shop Detail</a>
-            </Menu.Item>
-            <SubMenu title="Pages">
-              <Menu.Item key="page1">
-                <a href="#page1">Page 1</a>
-              </Menu.Item>
-              <Menu.Item key="page2">
-                <a href="#page2">Page 2</a>
-              </Menu.Item>
-            </SubMenu>
-            <Menu.Item key="contact">
-              <a href="#contact">Contact</a>
+              <Link to="/shop">Court</Link>
             </Menu.Item>
           </Menu>
           <div className="flex items-center space-x-4">
-            <Input
-              placeholder="search"
-              prefix={<AiOutlineSearch className="text-xl text-gray-500" />}
-              className="rounded-full"
-            />
             {isLoggedIn ? (
               <>
                 {roleName === "Manager" && (
@@ -142,6 +123,14 @@ const Header = ({ isLoggedIn, onLogout }) => {
                     className="bg-blue-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
                   >
                     Staff
+                  </Link>
+                )}
+                {roleName === "Admin" && (
+                  <Link
+                    to="/admin/users"
+                    className="bg-blue-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+                  >
+                    Admin
                   </Link>
                 )}
                 <Dropdown overlay={menu} placement="bottomRight">
