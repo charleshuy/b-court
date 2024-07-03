@@ -32,6 +32,27 @@ const FileAPI = {
       throw error;
     }
   },
+  uploadFileCourt: async (courtId, file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await apiClient.post(
+        `/files/upload/court/${courtId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error("Failed to upload court file:", error);
+      throw error;
+    }
+  },
 
   downloadFile: async (fileId) => {
     try {
