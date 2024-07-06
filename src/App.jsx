@@ -53,11 +53,6 @@ function App() {
               <Banner />
               <Features />
               <Court />
-              <PromotionalCard />
-              <Banner2 />
-              <CourtsOnSale />
-              <Testimonials />
-              <Footer />
             </>
           }
         />
@@ -67,7 +62,6 @@ function App() {
             <>
               <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <Shop />
-              <Footer />
             </>
           }
         />
@@ -77,7 +71,6 @@ function App() {
             <>
               <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <Profile />
-              <Footer />
             </>
           }
         />
@@ -87,7 +80,6 @@ function App() {
             <>
               <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <CourtDetail />
-              <Footer />
             </>
           }
         />
@@ -97,7 +89,6 @@ function App() {
             <>
               <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <Payment />
-              <Footer />
             </>
           }
         />

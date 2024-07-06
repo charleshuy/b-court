@@ -17,6 +17,8 @@ const Shop = () => {
   const [pageSize, setPageSize] = useState(8);
   const [filteredCourts, setFilteredCourts] = useState([]);
   const [selectedDistricts, setSelectedDistricts] = useState([]);
+  const [sortBy, setSortBy] = useState("nothing");
+  const [sortOrder, setSortOrder] = useState("asc"); // default ascending
 
   useEffect(() => {
     const fetchCourts = async () => {
@@ -31,6 +33,22 @@ const Shop = () => {
 
     fetchCourts();
   }, []);
+
+  useEffect(() => {
+    handleSorting();
+  }, [sortBy, sortOrder]);
+
+  const handleSorting = () => {
+    let sortedCourts = [...filteredCourts];
+
+    if (sortBy === "price_asc") {
+      sortedCourts.sort((a, b) => a.price - b.price);
+    } else if (sortBy === "price_desc") {
+      sortedCourts.sort((a, b) => b.price - a.price);
+    }
+
+    setFilteredCourts(sortedCourts);
+  };
 
   const handleSearch = (value) => {
     const filtered = courts.filter((court) =>
@@ -94,7 +112,11 @@ const Shop = () => {
         <div className="w-3/4 p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-3xl font-semibold">Courts</h2>
-            <Select defaultValue="nothing">
+            <Select
+              defaultValue={sortBy}
+              onChange={(value) => setSortBy(value)}
+              className="w-48"
+            >
               <Option value="nothing">Default Sorting</Option>
               <Option value="price_asc">Price: Low to High</Option>
               <Option value="price_desc">Price: High to Low</Option>

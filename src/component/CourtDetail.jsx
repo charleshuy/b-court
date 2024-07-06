@@ -303,17 +303,17 @@ const CourtDetail = () => {
 
               if (bookingInfo === "start") {
                 slotStyle.background =
-                  "linear-gradient(to right, rgba(0, 128, 0, 0.5) 50%, #ccc 50%)";
+                  "linear-gradient(to right, white 50%, #ccc 50%)";
               } else if (bookingInfo === "end") {
                 slotStyle.background =
-                  "linear-gradient(to right, #ccc 50%, rgba(0, 128, 0, 0.5) 50%)";
+                  "linear-gradient(to right, #ccc 50%, white 50%)";
               } else if (bookingInfo === "startEnd") {
                 slotStyle.background =
                   "linear-gradient(to right, #ccc 50%, #ccc 50%)";
               } else if (bookingInfo === "middle") {
                 slotStyle.background = "#ccc";
               } else {
-                slotStyle.background = "rgba(0, 128, 0, 0.5)";
+                slotStyle.background = "white";
               }
 
               return (

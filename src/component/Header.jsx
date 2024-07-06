@@ -4,7 +4,7 @@ import {
   AiOutlineSetting,
   AiOutlineLogout,
 } from "react-icons/ai";
-import { FiMapPin, FiMail } from "react-icons/fi";
+import { FiPhone, FiMail } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import bad3Image from "../assets/images/bad3.png";
 import { jwtDecode } from "jwt-decode";
@@ -65,22 +65,12 @@ const Header = ({ isLoggedIn, onLogout }) => {
     <header className="relative text-white">
       <div className="container mx-auto p-4 flex justify-between items-center bg-green-500 rounded-xl relative z-10">
         <div className="flex items-center space-x-4">
-          <FiMapPin className="text-xl" />
-          <span>123 Street, New York</span>
           <FiMail className="text-xl" />
           <span>Email@Example.com</span>
+          <FiPhone className="text-xl" />
+          <span>1234567890</span>
         </div>
-        <div className="flex space-x-4">
-          <a href="#privacy" className="hover:underline">
-            Privacy Policy
-          </a>
-          <a href="#terms" className="hover:underline">
-            Terms of Use
-          </a>
-          <a href="#refunds" className="hover:underline">
-            Sales and Refunds
-          </a>
-        </div>
+        <div className="flex space-x-4"></div>
       </div>
       <div className="sticky top-0 bg-white z-20">
         <div className="container mx-auto p-4 flex justify-between items-center relative">
