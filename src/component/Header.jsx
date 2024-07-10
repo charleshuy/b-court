@@ -66,9 +66,9 @@ const Header = ({ isLoggedIn, onLogout }) => {
       <div className="container mx-auto p-4 flex justify-between items-center bg-green-500 rounded-xl relative z-10">
         <div className="flex items-center space-x-4">
           <FiMail className="text-xl" />
-          <span>Email@Example.com</span>
+          <span>huylouis07@gmail.com</span>
           <FiPhone className="text-xl" />
-          <span>1234567890</span>
+          <span>0977517855</span>
         </div>
         <div className="flex space-x-4"></div>
       </div>

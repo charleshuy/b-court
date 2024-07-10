@@ -19,9 +19,7 @@ const SideBar = () => {
         <Menu.Item key="1" icon={<AppstoreOutlined />}>
           <Link to="/manager/courts">Courts</Link>
         </Menu.Item>
-        <Menu.Item key="2" icon={<OrderedListOutlined />}>
-          <Link to="/manager/orders">Order List</Link>
-        </Menu.Item>
+
         <Menu.Item key="3" icon={<UserOutlined />}>
           <Link to="/manager/staff">Staff</Link>
         </Menu.Item>

@@ -268,7 +268,7 @@ const CourtDetail = () => {
           <p className="text-gray-600">
             {court.district.districtName}, {court.district.city.cityName}
           </p>
-          <Rate disabled defaultValue={5} />
+
           <p className="text-lg font-semibold">
             Price:{" "}
             {court.price.toLocaleString("en-US", {
