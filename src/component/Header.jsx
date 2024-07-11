@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import bad3Image from "../assets/images/bad3.png";
 import { jwtDecode } from "jwt-decode";
 import { CgProfile } from "react-icons/cg";
+import { AiOutlineDollarCircle } from "react-icons/ai";
 import { useEffect, useState } from "react";
 const { SubMenu } = Menu;
 import UserAPI from "../api/UserAPI";
@@ -49,6 +50,15 @@ const Header = ({ isLoggedIn, onLogout }) => {
         >
           <CgProfile />
           <span>Profile</span>
+        </Link>
+      </Menu.Item>
+      <Menu.Item key="wallet">
+        <Link
+          to="/wallet"
+          className="flex justify-start items-center space-x-2"
+        >
+          <AiOutlineDollarCircle size={15} /> {/* Adjust size as needed */}
+          <span>Deposit</span>
         </Link>
       </Menu.Item>
 

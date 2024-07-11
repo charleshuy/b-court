@@ -16,6 +16,8 @@ import Headerv2 from "./managerpages/Headerv2";
 import SideBar from "./managerpages/Sidebar";
 import Login from "./component/Login";
 import Signup from "./component/Signup";
+import WalletComponent from "./component/WalletComponent"; // Import WalletComponent
+import PaymentReturn from "./component//PaymentReturn";
 import Order from "./managerpages/ManagementOrder";
 import ManagementCourt from "./managerpages/ManagementCourt";
 import ManagementSlot from "./managerpages/ManagementSlot";
@@ -25,8 +27,11 @@ import UserCheckIn from "./staffpages/UserCheckin";
 import SideBarv3 from "./adminpages/Sidebarv3";
 import ManagementUser from "./adminpages/ManagementUser";
 import ApproveCourt from "./adminpages/ApproveCourt";
+
 import { useState, useEffect } from "react";
 import Profile from "./userPages/Profile";
+import FailPage from "./userPages/DepositFail";
+import SuccessPage from "./userPages/DepositSuccess";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
@@ -92,6 +97,34 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/wallet"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+              <WalletComponent />
+            </>
+          }
+        />
+        <Route
+          path="/success"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+              <SuccessPage />
+            </>
+          }
+        />
+        <Route
+          path="/error"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+              <FailPage />
+            </>
+          }
+        />
+
         <Route
           path="/manager/orders"
           element={
