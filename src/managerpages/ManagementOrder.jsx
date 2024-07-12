@@ -1,44 +1,91 @@
-import { useState } from "react";
-import { Table, Button, Modal, Form, Input, DatePicker } from "antd";
-import moment from "moment";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Table, Tooltip } from "antd";
+import OrderAPI from "../api/OrderAPI"; // Make sure to import your OrderAPI
+import moment from "moment"; // Import moment for time formatting
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const Order = () => {
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingOrder, setEditingOrder] = useState(null);
-  const [orders, setOrders] = useState([
-    {
-      key: "1",
-      orderId: "12345",
-      amount: "100",
-      bookingDate: "2023-06-20",
-      date: "2023-06-24",
-      slotEnd: "18:00",
-      slotStart: "16:00",
-      courtId: "1",
-      methodId: "2",
-      userId: "3",
-    },
-    // Thêm các dữ liệu khác tại đây
-  ]);
+  const { courtId } = useParams(); // Get courtId from URL params
+  const [orders, setOrders] = useState([]);
 
-  const showModal = (order) => {
-    setEditingOrder(order);
-    setIsModalVisible(true);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const fetchedOrders = await OrderAPI.getOrdersByCourtId(courtId);
+        setOrders(
+          fetchedOrders.map((order) => ({ ...order, key: order.orderId }))
+        ); // Ensure each order has a key
+      } catch (error) {
+        console.error("Failed to fetch orders:", error);
+      }
+    };
+
+    fetchOrders();
+  }, [courtId]);
+
+  const formatTime = (time) => {
+    return moment(time, "HH:mm").format("HH:mm");
   };
 
-  const handleOk = () => {
-    setIsModalVisible(false);
-    // Logic cập nhật dữ liệu sau khi chỉnh sửa
-    const updatedOrders = orders.map((order) =>
-      order.key === editingOrder.key ? editingOrder : order
+  const getStatusText = (status) => {
+    if (status === null) return "Pending";
+    return status ? "Confirmed" : "Cancelled";
+  };
+
+  const renderTruncatedId = (id) => {
+    const truncatedId = `${id.substring(0, 8)}....`;
+    return (
+      <Tooltip title={id}>
+        <span>{truncatedId}</span>
+      </Tooltip>
     );
-    setOrders(updatedOrders);
-    setEditingOrder(null);
   };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setEditingOrder(null);
+  // Function to format data for the line chart
+  const formatDailyOrdersData = () => {
+    const orderCountsByDate = {};
+    orders.forEach((order) => {
+      const orderDate = moment(order.date, "YYYY-MM-DD").format("YYYY-MM-DD");
+      if (orderCountsByDate[orderDate]) {
+        orderCountsByDate[orderDate] += 1;
+      } else {
+        orderCountsByDate[orderDate] = 1;
+      }
+    });
+
+    const data = Object.keys(orderCountsByDate).map((date) => ({
+      date,
+      orders: orderCountsByDate[date],
+    }));
+
+    // Sort data by date
+    data.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
+
+    return data;
+  };
+
+  const dailyOrdersData = formatDailyOrdersData();
+
+  const chartTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip">
+          <p>{`Date: ${label}`}</p>
+          <p>{`Orders: ${payload[0].value}`}</p>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   const columns = [
@@ -46,16 +93,7 @@ const Order = () => {
       title: "Order ID",
       dataIndex: "orderId",
       key: "orderId",
-    },
-    {
-      title: "Amount",
-      dataIndex: "amount",
-      key: "amount",
-    },
-    {
-      title: "Booking Date",
-      dataIndex: "bookingDate",
-      key: "bookingDate",
+      render: (_, record) => renderTruncatedId(record.orderId),
     },
     {
       title: "Date",
@@ -63,144 +101,53 @@ const Order = () => {
       key: "date",
     },
     {
-      title: "Slot Start",
-      dataIndex: "slotStart",
-      key: "slotStart",
+      title: "Booking Date",
+      dataIndex: "bookingDate",
+      key: "bookingDate",
     },
     {
-      title: "Slot End",
-      dataIndex: "slotEnd",
-      key: "slotEnd",
+      title: "Slot",
+      key: "timeSlot",
+      render: (_, record) =>
+        `${formatTime(record.slotStart)} - ${formatTime(record.slotEnd)}`,
     },
     {
-      title: "Court ID",
-      dataIndex: "courtId",
-      key: "courtId",
+      title: "Payment Method",
+      dataIndex: "methodMethodName",
+      key: "methodMethodName",
     },
     {
-      title: "Method ID",
-      dataIndex: "methodId",
-      key: "methodId",
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
     },
     {
       title: "User ID",
       dataIndex: "userId",
       key: "userId",
+      render: (_, record) => renderTruncatedId(record.userId),
     },
     {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <div>
-          <Button type="primary" onClick={() => showModal(record)}>
-            Edit
-          </Button>
-          <Button
-            type="default"
-            onClick={() => showModal(record)}
-            className="ml-2"
-          >
-            View Details
-          </Button>
-        </div>
-      ),
+      title: "Status",
+      key: "status",
+      render: (_, record) => getStatusText(record.status),
     },
   ];
 
   return (
     <div>
-      <h2 className="text-2xl font-bold p-4">Orders</h2>
+      <div style={{ marginBottom: 20 }}>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={dailyOrdersData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis />
+            <RechartsTooltip content={chartTooltip} />
+            <Line type="monotone" dataKey="orders" stroke="#1890ff" />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
       <Table columns={columns} dataSource={orders} />
-      <Modal
-        title="Edit Order"
-        visible={isModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        width={1000}
-      >
-        {editingOrder && (
-          <Form layout="vertical">
-            <Form.Item label="Order ID">
-              <Input value={editingOrder.orderId} readOnly />
-            </Form.Item>
-            <Form.Item label="Amount">
-              <Input
-                value={editingOrder.amount}
-                onChange={(e) =>
-                  setEditingOrder({ ...editingOrder, amount: e.target.value })
-                }
-              />
-            </Form.Item>
-            <Form.Item label="Booking Date">
-              <DatePicker
-                className="w-full"
-                value={moment(editingOrder.bookingDate, "YYYY-MM-DD")}
-                onChange={(date) =>
-                  setEditingOrder({
-                    ...editingOrder,
-                    bookingDate: date.format("YYYY-MM-DD"),
-                  })
-                }
-              />
-            </Form.Item>
-            <Form.Item label="Date">
-              <DatePicker
-                className="w-full"
-                value={moment(editingOrder.date, "YYYY-MM-DD")}
-                onChange={(date) =>
-                  setEditingOrder({
-                    ...editingOrder,
-                    date: date.format("YYYY-MM-DD"),
-                  })
-                }
-              />
-            </Form.Item>
-            <Form.Item label="Slot Start">
-              <Input
-                value={editingOrder.slotStart}
-                onChange={(e) =>
-                  setEditingOrder({
-                    ...editingOrder,
-                    slotStart: e.target.value,
-                  })
-                }
-              />
-            </Form.Item>
-            <Form.Item label="Slot End">
-              <Input
-                value={editingOrder.slotEnd}
-                onChange={(e) =>
-                  setEditingOrder({ ...editingOrder, slotEnd: e.target.value })
-                }
-              />
-            </Form.Item>
-            <Form.Item label="Court ID">
-              <Input
-                value={editingOrder.courtId}
-                onChange={(e) =>
-                  setEditingOrder({ ...editingOrder, courtId: e.target.value })
-                }
-              />
-            </Form.Item>
-            <Form.Item label="Method ID">
-              <Input
-                value={editingOrder.methodId}
-                onChange={(e) =>
-                  setEditingOrder({ ...editingOrder, methodId: e.target.value })
-                }
-              />
-            </Form.Item>
-            <Form.Item label="User ID">
-              <Input
-                value={editingOrder.userId}
-                onChange={(e) =>
-                  setEditingOrder({ ...editingOrder, userId: e.target.value })
-                }
-              />
-            </Form.Item>
-          </Form>
-        )}
-      </Modal>
     </div>
   );
 };

@@ -14,7 +14,7 @@ import UserAPI from "../api/UserAPI";
 import OrderAPI from "../api/OrderAPI";
 import FileAPI from "../api/FileAPI";
 import { jwtDecode } from "jwt-decode";
-
+import { Link } from "react-router-dom";
 const { confirm } = Modal;
 
 const Profile = () => {
@@ -146,10 +146,16 @@ const Profile = () => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (text) =>
-        text.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+      render: (text) => text + "VND",
     },
-    { title: "Court", dataIndex: "courtName", key: "courtName" },
+    {
+      title: "Court",
+      dataIndex: "courtName",
+      key: "courtName",
+      render: (courtName, record) => (
+        <Link to={`/court-detail/${record.courtId}`}>{courtName}</Link>
+      ),
+    },
     {
       title: "Slot",
       dataIndex: "slot",
@@ -175,7 +181,13 @@ const Profile = () => {
       dataIndex: "status",
       key: "actions",
       render: (status, record) => {
-        if (status === null) {
+        const bookingDate = new Date(record.bookingDate);
+        const today = new Date();
+        const oneDayAfterToday = new Date();
+        oneDayAfterToday.setDate(today.getDate() + 1);
+
+        // Check if status is null and bookingDate is after today minus 1 day
+        if (status === null && bookingDate >= oneDayAfterToday) {
           return (
             <Button
               type="primary"
@@ -185,10 +197,11 @@ const Profile = () => {
             </Button>
           );
         } else {
-          return null; // Return null for non-pending orders
+          return null; // Return null for non-pending orders or past bookings
         }
       },
     },
+    ,
   ];
 
   if (!user) {
@@ -267,12 +280,13 @@ const Profile = () => {
           )}
         </div>
         <div className="mb-4">
-          <strong>Wallet Balance:</strong>{" "}
-          {editableUser.walletAmount.toLocaleString("en-US", {
-            style: "currency",
-            currency: "USD",
-          })}
+          <strong>Wallet Balance:</strong> {editableUser.walletAmount} VND
         </div>
+        {user.role.roleName === "Manager" && (
+          <div className="mb-4">
+            <strong>Escrow Balance:</strong> {editableUser.refundWallet} VND
+          </div>
+        )}
 
         <div className="mb-4">
           <strong>Role:</strong> {user.role.roleName}

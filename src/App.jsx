@@ -42,7 +42,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    window.location.reload();
+    window.location.href = "/"; // Redirect to the home page
   };
 
   return (
@@ -126,7 +126,7 @@ function App() {
         />
 
         <Route
-          path="/manager/orders"
+          path="/manager/courts/manager/orders/:courtId"
           element={
             <div className="flex">
               <SideBar />

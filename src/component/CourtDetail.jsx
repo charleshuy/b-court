@@ -222,6 +222,16 @@ const CourtDetail = () => {
       setErrorModalVisible(true); // Show error modal
     }
   };
+  const showBookConfirmation = () => {
+    Modal.confirm({
+      title: "Confirm Booking",
+      content: "Are you sure you want to book this slot?",
+      okText: "Book",
+      cancelText: "Cancel",
+      onOk: handleBookNow,
+    });
+  };
+
   useEffect(() => {
     const fetchOrders = async () => {
       if (selectedDate && orderData.court.courtId) {
@@ -269,13 +279,7 @@ const CourtDetail = () => {
             {court.district.districtName}, {court.district.city.cityName}
           </p>
 
-          <p className="text-lg font-semibold">
-            Price:{" "}
-            {court.price.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })}
-          </p>
+          <p className="text-lg font-semibold">Price: {court.price}VND/h</p>
           <p className="text-gray-600 mt-2">{court.description}</p>
         </div>
       </div>
@@ -366,7 +370,7 @@ const CourtDetail = () => {
         </Select>
         <Button
           className="w-full h-10 rounded bg-orange-500 text-white hover:bg-orange-600"
-          onClick={handleBookNow}
+          onClick={showBookConfirmation}
         >
           Book Now
         </Button>

@@ -302,7 +302,7 @@ const ManagementCourt = () => {
       key: "action",
       render: (_, record) => (
         <div className="flex space-x-4">
-          <Link to="/manager/orders">
+          <Link to={`manager/orders/${record.courtId}`}>
             <Button>View Orders</Button>
           </Link>
           <Button onClick={() => showModal(record)}>Edit</Button>
