@@ -30,8 +30,12 @@ import ApproveCourt from "./adminpages/ApproveCourt";
 
 import { useState, useEffect } from "react";
 import Profile from "./userPages/Profile";
+
+import ForgotPassword from "./component/ForgotPassword";
+
 import FailPage from "./userPages/DepositFail";
 import SuccessPage from "./userPages/DepositSuccess";
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
@@ -50,6 +54,7 @@ function App() {
       <Routes>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route
           path="/"
           element={
@@ -58,6 +63,7 @@ function App() {
               <Banner />
               <Features />
               <Court />
+
             </>
           }
         />
