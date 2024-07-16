@@ -298,6 +298,20 @@ const ManagementCourt = () => {
       render: (status) => <span>{status ? "Active" : "Inactive"}</span>,
     },
     {
+      title: "Approval",
+      dataIndex: "approval",
+      key: "approval",
+      render: (approval) => {
+        if (approval === null) {
+          return <span>Pending</span>;
+        } else if (approval) {
+          return <span>Approved</span>;
+        } else {
+          return <span>Rejected</span>;
+        }
+      },
+    },
+    {
       title: "Action",
       key: "action",
       render: (_, record) => (

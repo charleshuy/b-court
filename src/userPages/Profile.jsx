@@ -16,6 +16,7 @@ import FileAPI from "../api/FileAPI";
 import { jwtDecode } from "jwt-decode";
 import { Link } from "react-router-dom";
 const { confirm } = Modal;
+import { Tooltip } from "antd";
 
 const Profile = () => {
   const [form] = Form.useForm();
@@ -140,6 +141,21 @@ const Profile = () => {
     ? orders.filter((order) => order.bookingDate === selectedDate)
     : orders;
 
+  const refundRulesText = (
+    <div>
+      <p>
+        <strong>Refund Rules:</strong>
+      </p>
+      <p>
+        - E-Wallet: Full refund if cancelled more than 1 day before booking
+        date.
+      </p>
+      <p>
+        - Cash: Ban count increases if cancelled within 2 days of booking date.
+      </p>
+    </div>
+  );
+
   const columns = [
     { title: "Date", dataIndex: "bookingDate", key: "date" },
     {
@@ -184,20 +200,21 @@ const Profile = () => {
         const bookingDate = new Date(record.bookingDate);
         const today = new Date();
         const oneDayAfterToday = new Date();
-        oneDayAfterToday.setDate(today.getDate() + 1);
+        oneDayAfterToday.setDate(today.getDate() - 1);
 
-        // Check if status is null and bookingDate is after today minus 1 day
         if (status === null && bookingDate >= oneDayAfterToday) {
           return (
-            <Button
-              type="primary"
-              onClick={() => handleCancelOrder(record.orderId)}
-            >
-              Cancel
-            </Button>
+            <Tooltip title={refundRulesText} placement="topLeft">
+              <Button
+                type="primary"
+                onClick={() => handleCancelOrder(record.orderId)}
+              >
+                Cancel
+              </Button>
+            </Tooltip>
           );
         } else {
-          return null; // Return null for non-pending orders or past bookings
+          return null;
         }
       },
     },

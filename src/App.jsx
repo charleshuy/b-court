@@ -32,6 +32,7 @@ import { useState, useEffect } from "react";
 import Profile from "./userPages/Profile";
 import FailPage from "./userPages/DepositFail";
 import SuccessPage from "./userPages/DepositSuccess";
+import VerifyEmailSuccessPage from "./userPages/VerifyEmailSuccessPage";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
@@ -124,7 +125,15 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/verify/success"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+              <VerifyEmailSuccessPage />
+            </>
+          }
+        />
         <Route
           path="/manager/courts/manager/orders/:courtId"
           element={
