@@ -4,11 +4,12 @@ import {
   AiOutlineSetting,
   AiOutlineLogout,
 } from "react-icons/ai";
-import { FiMapPin, FiMail } from "react-icons/fi";
+import { FiPhone, FiMail } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import bad3Image from "../assets/images/bad3.png";
 import { jwtDecode } from "jwt-decode";
 import { CgProfile } from "react-icons/cg";
+import { AiOutlineDollarCircle } from "react-icons/ai";
 import { useEffect, useState } from "react";
 const { SubMenu } = Menu;
 import UserAPI from "../api/UserAPI";
@@ -42,15 +43,6 @@ const Header = ({ isLoggedIn, onLogout }) => {
 
   const menu = (
     <Menu>
-      <Menu.Item key="settings">
-        <a
-          href="#settings"
-          className="flex justify-start items-center space-x-2"
-        >
-          <AiOutlineSetting />
-          <span>Settings</span>
-        </a>
-      </Menu.Item>
       <Menu.Item key="profile">
         <Link
           to="/profile"
@@ -60,15 +52,16 @@ const Header = ({ isLoggedIn, onLogout }) => {
           <span>Profile</span>
         </Link>
       </Menu.Item>
-      <Menu.Item key="staff">
-        <a
-          href="staff/check-in"
+      <Menu.Item key="wallet">
+        <Link
+          to="/wallet"
           className="flex justify-start items-center space-x-2"
         >
-          <CgProfile />
-          <span>Staff</span>
-        </a>
+          <AiOutlineDollarCircle size={15} /> {/* Adjust size as needed */}
+          <span>Deposit</span>
+        </Link>
       </Menu.Item>
+
       <Menu.Item key="logout">
         <div className="flex justify-start items-center space-x-2">
           <AiOutlineLogout />
@@ -82,22 +75,12 @@ const Header = ({ isLoggedIn, onLogout }) => {
     <header className="sticky top-0 z-20 bg-white">
       <div className="container mx-auto p-4 flex justify-between items-center bg-lime-500 rounded-xl relative z-10 text-white">
         <div className="flex items-center space-x-4">
-          <FiMapPin className="text-xl" />
-          <span>123 Street, New York</span>
           <FiMail className="text-xl" />
-          <span>Email@Example.com</span>
+          <span>huylouis07@gmail.com</span>
+          <FiPhone className="text-xl" />
+          <span>0977517855</span>
         </div>
-        <div className="flex space-x-4">
-          <a href="#privacy" className="hover:underline">
-            Privacy Policy
-          </a>
-          <a href="#terms" className="hover:underline">
-            Terms of Use
-          </a>
-          <a href="#refunds" className="hover:underline">
-            Sales and Refunds
-          </a>
-        </div>
+        <div className="flex space-x-4"></div>
       </div>
       <div>
         <div className="container mx-auto p-4 flex justify-between items-center relative">
@@ -120,29 +103,10 @@ const Header = ({ isLoggedIn, onLogout }) => {
               <Link to="/">Home</Link>
             </Menu.Item>
             <Menu.Item key="shop">
-              <Link to="/shop">Shop</Link>
-            </Menu.Item>
-            <Menu.Item key="shop-detail">
-              <a href="#shop-detail">Shop Detail</a>
-            </Menu.Item>
-            <SubMenu title="Pages">
-              <Menu.Item key="page1">
-                <a href="#page1">Page 1</a>
-              </Menu.Item>
-              <Menu.Item key="page2">
-                <a href="#page2">Page 2</a>
-              </Menu.Item>
-            </SubMenu>
-            <Menu.Item key="contact">
-              <a href="#contact">Contact</a>
+              <Link to="/shop">Court</Link>
             </Menu.Item>
           </Menu>
           <div className="flex items-center space-x-4">
-            <Input
-              placeholder="search"
-              prefix={<AiOutlineSearch className="text-xl text-gray-500" />}
-              className="rounded-full"
-            />
             {isLoggedIn ? (
               <>
                 {roleName === "Manager" && (
@@ -161,6 +125,14 @@ const Header = ({ isLoggedIn, onLogout }) => {
                     Staff
                   </Link>
                 )}
+                {roleName === "Admin" && (
+                  <Link
+                    to="/admin/users"
+                    className="bg-blue-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+                  >
+                    Admin
+                  </Link>
+                )}
                 <Dropdown overlay={menu} placement="bottomRight">
                   <div className="flex items-center space-x-4 cursor-pointer">
                     <Avatar src={imageUrl} /> {/* Display avatar */}
@@ -171,6 +143,7 @@ const Header = ({ isLoggedIn, onLogout }) => {
               <Link
                 to="/login"
                 className="bg-lime-500 hover:bg-amber-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+
               >
                 Sign In
               </Link>

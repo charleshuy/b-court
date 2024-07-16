@@ -17,6 +17,8 @@ const Shop = () => {
   const [pageSize, setPageSize] = useState(8);
   const [filteredCourts, setFilteredCourts] = useState([]);
   const [selectedDistricts, setSelectedDistricts] = useState([]);
+  const [sortBy, setSortBy] = useState("nothing");
+  const [sortOrder, setSortOrder] = useState("asc"); // default ascending
 
   useEffect(() => {
     const fetchCourts = async () => {
@@ -31,6 +33,22 @@ const Shop = () => {
 
     fetchCourts();
   }, []);
+
+  useEffect(() => {
+    handleSorting();
+  }, [sortBy, sortOrder]);
+
+  const handleSorting = () => {
+    let sortedCourts = [...filteredCourts];
+
+    if (sortBy === "price_asc") {
+      sortedCourts.sort((a, b) => a.price - b.price);
+    } else if (sortBy === "price_desc") {
+      sortedCourts.sort((a, b) => b.price - a.price);
+    }
+
+    setFilteredCourts(sortedCourts);
+  };
 
   const handleSearch = (value) => {
     const filtered = courts.filter((court) =>
@@ -94,7 +112,11 @@ const Shop = () => {
         <div className="w-3/4 p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-3xl font-semibold">Courts</h2>
-            <Select defaultValue="nothing">
+            <Select
+              defaultValue={sortBy}
+              onChange={(value) => setSortBy(value)}
+              className="w-48"
+            >
               <Option value="nothing">Default Sorting</Option>
               <Option value="price_asc">Price: Low to High</Option>
               <Option value="price_desc">Price: High to Low</Option>
@@ -109,7 +131,7 @@ const Shop = () => {
                   className="relative bg-white rounded-lg shadow-lg overflow-hidden border-2 border-transparent hover:border-orange-500 transition-all duration-300"
                 >
                   <img
-                    src={court.courtImg}
+                    src={`http://localhost:8080/files/${court.fileId}`}
                     alt={court.courtName}
                     className="w-full h-48 object-cover"
                   />
@@ -119,12 +141,7 @@ const Shop = () => {
                         {court.courtName}
                       </h3>
                       <p className="text-gray-600">{court.description}</p>
-                      <p className="text-yellow-500 mt-2">
-                        {court.price.toLocaleString("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                        })}
-                      </p>
+                      <p className="text-yellow-500 mt-2">{court.price}VND/h</p>
                       <p className="text-gray-500 mt-2">
                         {`${court.address}, ${court.district.districtName}, ${court.district.city.cityName}`}
                       </p>

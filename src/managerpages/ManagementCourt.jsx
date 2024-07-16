@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Modal, Form, Input, Select, message } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  ExclamationCircleOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import CourtAPI from "../api/CourtAPI";
 import LocationAPI from "../api/LocationAPI";
-
+import FileAPI from "../api/FileAPI";
+import { Tooltip } from "antd";
 const { Option } = Select;
+const { confirm } = Modal;
 
 const ManagementCourt = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -37,6 +43,23 @@ const ManagementCourt = () => {
     }
   };
 
+  const handleFileUpload = async (file, courtId) => {
+    try {
+      if (!courtId) {
+        throw new Error("Court ID not available for file upload.");
+      }
+
+      const uploadResponse = await FileAPI.uploadFileCourt(courtId, file);
+
+      // Handle the response as needed (e.g., update court image)
+      message.success("File uploaded successfully");
+      fetchInitialData(); // Update court data after successful upload
+    } catch (error) {
+      message.error("Failed to upload file.");
+      console.error("Failed to upload file:", error);
+    }
+  };
+
   const fetchDistricts = async (cityId) => {
     try {
       const districtsData = await LocationAPI.getDistrictsByCityId(cityId);
@@ -61,7 +84,6 @@ const ManagementCourt = () => {
       const userId = decodedToken.userId;
 
       setEditingCourt({
-        courtImg: "",
         courtName: "",
         license: "",
         address: "",
@@ -106,7 +128,23 @@ const ManagementCourt = () => {
     setEditingCourt(null);
   };
 
-  const handleDelete = async (courtId) => {
+  const handleDelete = (courtId) => {
+    confirm({
+      title: "Are you sure you want to delete this court?",
+      icon: <ExclamationCircleOutlined />,
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk() {
+        deleteCourt(courtId);
+      },
+      onCancel() {
+        console.log("Cancel");
+      },
+    });
+  };
+
+  const deleteCourt = async (courtId) => {
     try {
       await CourtAPI.deleteCourt(courtId);
       setCourts(courts.filter((court) => court.courtId !== courtId));
@@ -144,16 +182,99 @@ const ManagementCourt = () => {
   const columns = [
     {
       title: "Image",
-      dataIndex: "courtImg",
-      key: "courtImg",
-      render: (text) => (
-        <img
-          src={`http://localhost:5173/${text}`}
-          alt="Court"
-          style={{ width: 50 }}
-        />
+      dataIndex: "fileId",
+      key: "fileId",
+      render: (fileId, record) => (
+        <div style={{ position: "relative", width: 50, height: 50 }}>
+          {fileId ? (
+            <>
+              <img
+                src={`http://localhost:8080/files/${fileId}`}
+                alt="Court"
+                style={{
+                  width: 50,
+                  height: 50,
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                }}
+              />
+              <Tooltip title="Change Image" placement="bottom">
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    opacity: 0,
+                    transition: "opacity 0.3s",
+                    cursor: "pointer",
+                    borderRadius: "50%",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+                  onClick={() => {
+                    // Trigger file upload dialog
+                    const fileInput = document.createElement("input");
+                    fileInput.type = "file";
+                    fileInput.accept = "image/*";
+                    fileInput.onchange = (e) => {
+                      const file = e.target.files[0];
+                      handleFileUpload(file, record.courtId);
+                    };
+                    fileInput.click();
+                  }}
+                >
+                  <UploadOutlined style={{ color: "#fff", fontSize: 18 }} />
+                </div>
+              </Tooltip>
+            </>
+          ) : (
+            <>
+              <Tooltip title="Upload Image" placement="bottom">
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    opacity: 0,
+                    transition: "opacity 0.3s",
+                    cursor: "pointer",
+                    borderRadius: "50%",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+                  onClick={() => {
+                    // Trigger file upload dialog
+                    const fileInput = document.createElement("input");
+                    fileInput.type = "file";
+                    fileInput.accept = "image/*";
+                    fileInput.onchange = (e) => {
+                      const file = e.target.files[0];
+                      handleFileUpload(file, record.courtId);
+                    };
+                    fileInput.click();
+                  }}
+                >
+                  <UploadOutlined style={{ color: "#fff", fontSize: 18 }} />
+                </div>
+              </Tooltip>
+            </>
+          )}
+        </div>
       ),
     },
+
     {
       title: "Court Name",
       dataIndex: "courtName",
@@ -181,8 +302,8 @@ const ManagementCourt = () => {
       key: "action",
       render: (_, record) => (
         <div className="flex space-x-4">
-          <Link to="/manager/slots">
-            <Button>View Slots</Button>
+          <Link to={`manager/orders/${record.courtId}`}>
+            <Button>View Orders</Button>
           </Link>
           <Button onClick={() => showModal(record)}>Edit</Button>
           <Button onClick={() => handleDelete(record.courtId)}>Delete</Button>
@@ -206,21 +327,13 @@ const ManagementCourt = () => {
       </div>
       <Table columns={columns} dataSource={courts} rowKey="courtId" />
       <Modal
-        title={editingCourt ? "Court" : "Court"}
+        title={editingCourt ? "Edit Court" : "Add Court"}
         visible={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
       >
         {editingCourt !== null && (
           <Form layout="vertical">
-            <Form.Item label="Image URL">
-              <Input
-                value={editingCourt.courtImg}
-                onChange={(e) =>
-                  setEditingCourt({ ...editingCourt, courtImg: e.target.value })
-                }
-              />
-            </Form.Item>
             <Form.Item label="Court Name">
               <Input
                 value={editingCourt.courtName}

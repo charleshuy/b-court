@@ -97,6 +97,15 @@ const OrderAPI = {
       throw error;
     }
   },
+  refundForEWalletOrder: async (orderId) => {
+    try {
+      const response = await apiClient.put(`/orders/refund/${orderId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Can't process refund for order ${orderId}:`, error);
+      throw error;
+    }
+  },
 };
 
 export default OrderAPI;

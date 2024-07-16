@@ -1,40 +1,96 @@
-import { useState } from "react";
-import { Table, Button, Modal, Image } from "antd";
+import { useState, useEffect } from "react";
+import { Table, Image, message, Select, Button, Input, Modal } from "antd";
+import CourtAPI from "../api/CourtAPI";
+
+const { Option } = Select;
 
 const ApproveCourt = () => {
-  const [courts, setCourts] = useState([
-    {
-      key: "1",
-      image: "https://via.placeholder.com/100",
-      username: "john_doe",
-      courtName: "Court A",
-      location: "123 Main St",
-      price: "50",
-    },
-    // Thêm các dữ liệu khác tại đây
-  ]);
+  const [courts, setCourts] = useState([]);
+  const [filteredCourts, setFilteredCourts] = useState([]);
+  const [filter, setFilter] = useState("All");
+  const [usernameSearch, setUsernameSearch] = useState("");
+  const [courtNameSearch, setCourtNameSearch] = useState("");
+  const [courtToDelete, setCourtToDelete] = useState(null); // Track court to delete
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // Control delete confirmation modal visibility
 
-  const [selectedCourt, setSelectedCourt] = useState(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  useEffect(() => {
+    const fetchCourts = async () => {
+      try {
+        const courtsData = await CourtAPI.getCourtsAdmin();
+        const mappedCourts = courtsData.map((court) => ({
+          key: court.courtId,
+          image: `http://localhost:8080/files/${court.fileId}`, // Adjust the URL as needed
+          username: court.user.name,
+          courtName: court.courtName,
+          location: `${court.address}, ${court.district.districtName}, ${court.district.city.cityName}`,
+          price: court.price,
+          approval: court.approval,
+        }));
+        setCourts(mappedCourts);
+        setFilteredCourts(mappedCourts);
+      } catch (error) {
+        message.error("Failed to fetch courts data.");
+      }
+    };
 
-  const showModal = (court) => {
-    setSelectedCourt(court);
-    setIsModalVisible(true);
+    fetchCourts();
+  }, []);
+
+  const handleApprovalChange = async (value, court) => {
+    try {
+      const updatedCourt = { ...court, approval: value };
+      await CourtAPI.updateCourt(court.key, updatedCourt);
+      setCourts((prevCourts) =>
+        prevCourts.map((c) =>
+          c.key === court.key ? { ...c, approval: value } : c
+        )
+      );
+      message.success("Court approval status updated successfully.");
+    } catch (error) {
+      message.error("Failed to update court approval status.");
+    }
   };
 
-  const handleApprove = () => {
-    setCourts(courts.filter((court) => court.key !== selectedCourt.key));
-    setIsModalVisible(false);
+  const handleDelete = async (courtId) => {
+    try {
+      await CourtAPI.deleteCourt(courtId);
+      setCourts((prevCourts) =>
+        prevCourts.filter((court) => court.key !== courtId)
+      );
+      message.success("Court deleted successfully.");
+    } catch (error) {
+      message.error("Failed to delete court.");
+    }
   };
 
-  const handleReject = () => {
-    setCourts(courts.filter((court) => court.key !== selectedCourt.key));
-    setIsModalVisible(false);
+  const handleConfirmDelete = () => {
+    if (courtToDelete) {
+      handleDelete(courtToDelete.key);
+    }
+    setIsDeleteModalVisible(false); // Close delete confirmation modal
   };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
+  useEffect(() => {
+    let filtered = courts;
+
+    if (filter === "Pending") {
+      filtered = filtered.filter((court) => court.approval === null);
+    }
+
+    if (usernameSearch) {
+      filtered = filtered.filter((court) =>
+        court.username.toLowerCase().includes(usernameSearch.toLowerCase())
+      );
+    }
+
+    if (courtNameSearch) {
+      filtered = filtered.filter((court) =>
+        court.courtName.toLowerCase().includes(courtNameSearch.toLowerCase())
+      );
+    }
+
+    setFilteredCourts(filtered);
+  }, [filter, usernameSearch, courtNameSearch, courts]);
 
   const columns = [
     {
@@ -64,12 +120,42 @@ const ApproveCourt = () => {
       key: "price",
     },
     {
+      title: "Approval",
+      dataIndex: "approval",
+      key: "approval",
+      render: (approval, court) => (
+        <Select
+          value={
+            approval === null ? "Pending" : approval ? "Approved" : "Rejected"
+          }
+          onChange={(value) => handleApprovalChange(value, court)}
+        >
+          {approval === null && (
+            <Option value="Pending" disabled>
+              Pending
+            </Option>
+          )}
+          <Option value={true}>Approved</Option>
+          <Option value={false}>Rejected</Option>
+        </Select>
+      ),
+    },
+    {
       title: "Action",
       key: "action",
-      render: (_, record) => (
-        <Button type="primary" onClick={() => showModal(record)}>
-          Review
-        </Button>
+      render: (text, court) => (
+        <>
+          <Button
+            type="primary"
+            danger
+            onClick={() => {
+              setCourtToDelete(court);
+              setIsDeleteModalVisible(true);
+            }}
+          >
+            Delete
+          </Button>
+        </>
       ),
     },
   ];
@@ -77,38 +163,40 @@ const ApproveCourt = () => {
   return (
     <div>
       <h2 className="text-2xl font-bold p-4">Approve Court</h2>
-      <Table columns={columns} dataSource={courts} />
+      <div className="p-4 flex space-x-4">
+        <Button
+          type={filter === "All" ? "primary" : "default"}
+          onClick={() => setFilter("All")}
+        >
+          All
+        </Button>
+        <Button
+          type={filter === "Pending" ? "primary" : "default"}
+          onClick={() => setFilter("Pending")}
+        >
+          Pending
+        </Button>
+        <Input
+          placeholder="Search by Username"
+          value={usernameSearch}
+          onChange={(e) => setUsernameSearch(e.target.value)}
+        />
+        <Input
+          placeholder="Search by Court Name"
+          value={courtNameSearch}
+          onChange={(e) => setCourtNameSearch(e.target.value)}
+        />
+      </div>
+      <Table columns={columns} dataSource={filteredCourts} />
       <Modal
-        title="Review Court"
-        visible={isModalVisible}
-        onOk={handleApprove}
-        onCancel={handleCancel}
-        footer={[
-          <Button key="reject" type="danger" onClick={handleReject}>
-            Reject
-          </Button>,
-          <Button key="approve" type="primary" onClick={handleApprove}>
-            Approve
-          </Button>,
-        ]}
+        title="Confirm Delete"
+        visible={isDeleteModalVisible}
+        onCancel={() => setIsDeleteModalVisible(false)}
+        onOk={handleConfirmDelete}
+        okText="Delete"
+        cancelText="Cancel"
       >
-        {selectedCourt && (
-          <div>
-            <Image width={100} src={selectedCourt.image} />
-            <p>
-              <strong>Username:</strong> {selectedCourt.username}
-            </p>
-            <p>
-              <strong>Court Name:</strong> {selectedCourt.courtName}
-            </p>
-            <p>
-              <strong>Location:</strong> {selectedCourt.location}
-            </p>
-            <p>
-              <strong>Price:</strong> {selectedCourt.price}
-            </p>
-          </div>
-        )}
+        <p>Are you sure you want to delete this court?</p>
       </Modal>
     </div>
   );

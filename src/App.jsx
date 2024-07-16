@@ -16,6 +16,8 @@ import Headerv2 from "./managerpages/Headerv2";
 import SideBar from "./managerpages/Sidebar";
 import Login from "./component/Login";
 import Signup from "./component/Signup";
+import WalletComponent from "./component/WalletComponent"; // Import WalletComponent
+import PaymentReturn from "./component//PaymentReturn";
 import Order from "./managerpages/ManagementOrder";
 import ManagementCourt from "./managerpages/ManagementCourt";
 import ManagementSlot from "./managerpages/ManagementSlot";
@@ -25,9 +27,15 @@ import UserCheckIn from "./staffpages/UserCheckin";
 import SideBarv3 from "./adminpages/Sidebarv3";
 import ManagementUser from "./adminpages/ManagementUser";
 import ApproveCourt from "./adminpages/ApproveCourt";
+
 import { useState, useEffect } from "react";
 import Profile from "./userPages/Profile";
+
 import ForgotPassword from "./component/ForgotPassword";
+
+import FailPage from "./userPages/DepositFail";
+import SuccessPage from "./userPages/DepositSuccess";
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
@@ -38,7 +46,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    window.location.reload();
+    window.location.href = "/"; // Redirect to the home page
   };
 
   return (
@@ -55,10 +63,7 @@ function App() {
               <Banner />
               <Features />
               <Court />
-              <PromotionalCard />
-              <Banner2 />
-              <Testimonials />
-              <Footer />
+
             </>
           }
         />
@@ -68,7 +73,6 @@ function App() {
             <>
               <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <Shop />
-              <Footer />
             </>
           }
         />
@@ -78,7 +82,6 @@ function App() {
             <>
               <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <Profile />
-              <Footer />
             </>
           }
         />
@@ -88,7 +91,6 @@ function App() {
             <>
               <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <CourtDetail />
-              <Footer />
             </>
           }
         />
@@ -98,12 +100,39 @@ function App() {
             <>
               <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
               <Payment />
-              <Footer />
             </>
           }
         />
         <Route
-          path="/manager/orders"
+          path="/wallet"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+              <WalletComponent />
+            </>
+          }
+        />
+        <Route
+          path="/success"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+              <SuccessPage />
+            </>
+          }
+        />
+        <Route
+          path="/error"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+              <FailPage />
+            </>
+          }
+        />
+
+        <Route
+          path="/manager/courts/manager/orders/:courtId"
           element={
             <div className="flex">
               <SideBar />

@@ -12,6 +12,8 @@ const UserCheckIn = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [deletingOrderId, setDeletingOrderId] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [refundConfirmVisible, setRefundConfirmVisible] = useState(false); // State for refund confirmation modal
+  const [refundOrderId, setRefundOrderId] = useState(null); // State to store orderId for refund
   const token = localStorage.getItem("token");
   const decodedToken = jwtDecode(token);
 
@@ -90,10 +92,31 @@ const UserCheckIn = () => {
       setDeleteModalVisible(false); // Close the delete confirmation modal
       message.success("Order deleted successfully");
     } catch (error) {
+      message.error("Failed to delete order");
       console.error("Error deleting order:", error);
       // Handle error
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefund = async (orderId) => {
+    try {
+      setLoading(true);
+      await OrderAPI.refundForEWalletOrder(orderId);
+      const updatedOrders = orders.map((order) =>
+        order.orderId === orderId ? { ...order, status: false } : order
+      );
+      setOrders(updatedOrders);
+      setFilteredOrders(updatedOrders); // Update filteredOrders as well
+      message.success("Order refunded successfully");
+    } catch (error) {
+      message.error("Failed to refund order");
+      console.error("Error refunding order:", error);
+      // Handle error
+    } finally {
+      setLoading(false);
+      setRefundConfirmVisible(false); // Close refund confirmation modal after refund
     }
   };
 
@@ -135,6 +158,20 @@ const UserCheckIn = () => {
 
   const handleDatePickerChange = (date, dateString) => {
     setSelectedDate(dateString);
+  };
+
+  const showRefundConfirmModal = (orderId) => {
+    setRefundOrderId(orderId);
+    setRefundConfirmVisible(true);
+  };
+
+  const handleConfirmRefund = () => {
+    handleRefund(refundOrderId);
+  };
+
+  const handleCancelRefund = () => {
+    setRefundConfirmVisible(false);
+    setRefundOrderId(null);
   };
 
   const columns = [
@@ -193,13 +230,29 @@ const UserCheckIn = () => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (text, record) => `$${record.amount.toFixed(2)}`,
+      render: (text, record) => `${record.amount.toFixed(0)}d`,
+    },
+    {
+      title: "Payment",
+      dataIndex: "methodMethodName",
+      key: "methodMethodName",
     },
     {
       title: "Action",
       key: "action",
       render: (_, record) => (
         <div>
+          {record.status === null && record.methodMethodName === "E-Wallet" && (
+            // Render refund button only when status is 'Pending' and method is 'E-Wallet'
+            <Button
+              type="primary"
+              onClick={() => showRefundConfirmModal(record.orderId)}
+              className="mr-2"
+              disabled={loading}
+            >
+              Refund
+            </Button>
+          )}
           <Button
             type="danger"
             onClick={() => showDeleteModal(record.orderId)}
@@ -217,6 +270,16 @@ const UserCheckIn = () => {
             cancelText="Cancel"
           >
             <p>Are you sure you want to delete this order?</p>
+          </Modal>
+          <Modal
+            title="Confirm Refund"
+            visible={refundConfirmVisible}
+            onOk={handleConfirmRefund}
+            onCancel={handleCancelRefund}
+            okText="Refund"
+            cancelText="Cancel"
+          >
+            <p>Are you sure you want to refund this order?</p>
           </Modal>
         </div>
       ),

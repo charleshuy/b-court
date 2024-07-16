@@ -71,9 +71,11 @@ const Login = ({ onLogin }) => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <Link to="/forgot-password" className="mb-4 text-green-400">
+
+        {/* <a href="#" className="mb-4 text-green-400">
           Forgot Password?
-        </Link>
+        </a> */}
+
         <button
           className="bg-lime-500 hover:bg-amber-500 text-white px-8 py-4 h-10 flex items-center justify-center w-1/3 h-8 rounded-full"
           onClick={handleLogin}

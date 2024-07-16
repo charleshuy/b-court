@@ -11,6 +11,15 @@ const CourtAPI = {
       throw error;
     }
   },
+  getCourtsAdmin: async () => {
+    try {
+      const response = await apiClient.get("/courts/manage"); // Ensure you're using the correct method and endpoint
+      return response.data.content; // Return the content array
+    } catch (error) {
+      console.error("Can't fetch courts:", error);
+      throw error;
+    }
+  },
   getCourtsByUserId: async (userId, page = 0, size = 10) => {
     try {
       const response = await apiClient.get(
@@ -56,6 +65,10 @@ const CourtAPI = {
       console.error(`Can't update court ${courtId}:`, error);
       throw error;
     }
+  },
+  deleteCourt: async (courtId) => {
+    const response = await apiClient.delete(`/courts/delete/${courtId}`);
+    return response.data;
   },
 };
 

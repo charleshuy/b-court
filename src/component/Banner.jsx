@@ -15,17 +15,7 @@ const Banner = () => {
               Book Your Court and Start Playing Today
             </h1>
           </div>
-          <div className="flex space-x-4 mt-4">
-            <input
-              type="text"
-              className="px-4 py-2 rounded-full text-black"
-              placeholder="Search"
-              style={{ width: "300px" }}
-            />
-            <button className="bg-lime-500 hover:bg-amber-500 text-white px-8 py-4 h-10 flex items-center justify-center rounded-full">
-              Submit Now
-            </button>
-          </div>
+
         </div>
         <div className="relative mt-8 md:mt-0 md:w-1/2 max-w-lg">
           <Carousel

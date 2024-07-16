@@ -49,6 +49,10 @@ const UserAPI = {
     );
     return response.data;
   },
+  getUsersByRoleName: async (roleName) => {
+    const response = await apiClient.get(`/users/role/${roleName}`);
+    return response.data;
+  },
 };
 
 export default UserAPI;
