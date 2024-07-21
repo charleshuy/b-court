@@ -4,14 +4,17 @@ import { SearchOutlined, UserOutlined } from "@ant-design/icons";
 const handleLogout = () => {
   localStorage.removeItem("token");
 };
+
 const menu = (
   <Menu>
-    <Menu.Item key="0">
+    <Menu.Item key="profile">
       <a href="/profile">Profile</a>
     </Menu.Item>
-
+    <Menu.Item key="deposit">
+      <a href="/wallet">Deposit</a>
+    </Menu.Item>
     <Menu.Divider />
-    <Menu.Item key="3">
+    <Menu.Item key="logout">
       <a onClick={handleLogout} href="/">
         Logout
       </a>
