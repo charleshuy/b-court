@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Input, message, Spin } from "antd";
@@ -13,6 +13,10 @@ import UserAPI from "/src/api/UserAPI";
 
 const Signup = () => {
   const navigate = useNavigate();
+
+  // State to handle messages
+  const [messageApi, contextHolder] = message.useMessage();
+
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -24,7 +28,10 @@ const Signup = () => {
       name: Yup.string()
         .min(2, "Name must be at least 2 characters")
         .max(50, "Name must be 50 characters or less")
-        .matches(/^[A-Za-z\s]+$/, "Name can only contain letters and spaces")
+        .matches(
+          /^[A-Za-zÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỳỵỷỹỲỴỶỸ ]+$/,
+          "Name can only contain letters and spaces (Accepts Vietnamese names)"
+        )
         .required("Name is required"),
       email: Yup.string()
         .email("Invalid email address")
@@ -45,11 +52,11 @@ const Signup = () => {
       console.log("Form data:", values);
       setSubmitting(true);
       try {
-        await UserAPI.register(values);
-        message.success("Registration successful!");
+        const auth = await UserAPI.register(values);
+        messageApi.success("Registration successful!");
         navigate("/login");
       } catch (error) {
-        message.error("Registration failed. Please try again.");
+        messageApi.error(error.message || "Registration failed");
       } finally {
         setSubmitting(false);
       }
@@ -58,6 +65,7 @@ const Signup = () => {
 
   return (
     <div className="flex h-screen">
+      {contextHolder}
       <div className="flex-1 flex flex-col justify-center items-center">
         <h1 className="text-3xl font-bold mb-8">Sign up</h1>
         <form onSubmit={formik.handleSubmit} className="w-1/3">

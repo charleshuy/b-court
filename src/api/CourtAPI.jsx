@@ -2,15 +2,23 @@
 import apiClient from "./apiClient";
 
 const CourtAPI = {
-  getCourts: async () => {
+  getCourts: async (
+    page = 0,
+    size = 8,
+    sortBy = "price",
+    sortOrder = "desc"
+  ) => {
     try {
-      const response = await apiClient.get("/courts"); // Ensure you're using the correct method and endpoint
-      return response.data.content; // Return the content array
+      const response = await apiClient.get(
+        `/courts?page=${page}&size=${size}&sortBy=${sortBy}&sortOrder=${sortOrder}`
+      );
+      return response.data;
     } catch (error) {
       console.error("Can't fetch courts:", error);
       throw error;
     }
   },
+
   getCourtsAdmin: async () => {
     try {
       const response = await apiClient.get("/courts/manage"); // Ensure you're using the correct method and endpoint
@@ -20,7 +28,7 @@ const CourtAPI = {
       throw error;
     }
   },
-  getCourtsByUserId: async (userId, page = 0, size = 10) => {
+  getCourtsByUserId: async (userId, page = 0, size = 100) => {
     try {
       const response = await apiClient.get(
         `/courts/user/${userId}?page=${page}&size=${size}`
@@ -69,6 +77,15 @@ const CourtAPI = {
   deleteCourt: async (courtId) => {
     const response = await apiClient.delete(`/courts/delete/${courtId}`);
     return response.data;
+  },
+  getCourtById: async (courtId) => {
+    try {
+      const response = await apiClient.get(`/courts/${courtId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Can't fetch court with ID ${courtId}:`, error);
+      throw error;
+    }
   },
 };
 
