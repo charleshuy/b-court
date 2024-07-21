@@ -72,8 +72,8 @@ const Header = ({ isLoggedIn, onLogout }) => {
   );
 
   return (
-    <header className="relative text-white">
-      <div className="container mx-auto p-4 flex justify-between items-center bg-green-500 rounded-xl relative z-10">
+    <header className="sticky top-0 z-20 bg-white">
+      <div className="container mx-auto p-4 flex justify-between items-center bg-lime-500 rounded-xl relative z-10 text-white">
         <div className="flex items-center space-x-4">
           <FiMail className="text-xl" />
           <span>huylouis07@gmail.com</span>
@@ -82,7 +82,7 @@ const Header = ({ isLoggedIn, onLogout }) => {
         </div>
         <div className="flex space-x-4"></div>
       </div>
-      <div className="sticky top-0 bg-white z-20">
+      <div>
         <div className="container mx-auto p-4 flex justify-between items-center relative">
           <div className="relative w-44 h-20">
             <Link to="/">
@@ -142,7 +142,8 @@ const Header = ({ isLoggedIn, onLogout }) => {
             ) : (
               <Link
                 to="/login"
-                className="bg-green-500 hover:bg-orange-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+                className="bg-lime-500 hover:bg-amber-500 text-white px-4 py-2 w-full h-8 rounded flex items-center justify-center"
+
               >
                 Sign In
               </Link>

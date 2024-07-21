@@ -68,6 +68,7 @@ const Signup = () => {
       {contextHolder}
       <div className="flex-1 flex flex-col justify-center items-center">
         <h1 className="text-3xl font-bold mb-8">Sign up</h1>
+
         <form onSubmit={formik.handleSubmit} className="w-1/3">
           <Input
             name="name"
@@ -139,6 +140,7 @@ const Signup = () => {
             {formik.isSubmitting ? <Spin /> : "Sign Up"}
           </button>
         </form>
+
       </div>
       <div className="flex-1 bg-gradient-to-r from-yellow-500 to-green-400 text-white flex flex-col justify-center items-center relative rounded-es-full">
         <div className="flex flex-col items-center absolute top-20 right-20 text-right">

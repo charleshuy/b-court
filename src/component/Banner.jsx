@@ -7,13 +7,15 @@ const Banner = () => {
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between mt-8">
         <div className="flex flex-col items-center md:items-start space-y-4 md:w-1/2">
           <div className="flex flex-col items-center md:items-start space-y-2 my-4">
-            <p className="text-yellow-400 text-xl font-bold">
+            <p className="text-amber-500 text-xl font-bold">
               With easy booking and payment
             </p>
-            <h1 className="text-6xl font-bold text-center md:text-left">
+
+            <h1 className="text-6xl font-bold text-center md:text-left text-amber-500">
               Book Your Court and Start Playing Today
             </h1>
           </div>
+
         </div>
         <div className="relative mt-8 md:mt-0 md:w-1/2 max-w-lg">
           <Carousel
