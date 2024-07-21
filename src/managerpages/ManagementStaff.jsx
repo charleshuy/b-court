@@ -89,6 +89,7 @@ const ManagementStaff = () => {
         >
           <Form.Item name="assignedCourtId" noStyle>
             <Select
+              placeholder="Select a court"
               onChange={(value) =>
                 handleSaveAssignedCourt(record.userId, value)
               }

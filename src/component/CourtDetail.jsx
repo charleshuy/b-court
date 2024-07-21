@@ -94,9 +94,12 @@ const CourtDetail = () => {
   useEffect(() => {
     const fetchCourt = async () => {
       try {
-        const response = await CourtAPI.getCourts();
-        const courtData = response.find((court) => court.courtId === id);
+        // Fetch the court by ID
+        const courtData = await CourtAPI.getCourtById(id);
+
+        // Set the court data in state
         setCourt(courtData);
+
         // Set courtId in orderData when courtData is fetched
         setOrderData((prev) => ({
           ...prev,

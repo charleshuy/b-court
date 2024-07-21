@@ -22,7 +22,10 @@ const ManagementUser = () => {
   const [isCreatingUser, setIsCreatingUser] = useState(false); // Track if creating a new user
   const [userToDelete, setUserToDelete] = useState(null); // Track user to delete
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // Control delete confirmation modal visibility
-
+  const [managerSearchTerm, setManagerSearchTerm] = useState("");
+  const filteredManagers = managers.filter((manager) =>
+    manager.email.toLowerCase().includes(managerSearchTerm.toLowerCase())
+  );
   const fetchUsers = async (page, size) => {
     try {
       const response = await UserAPI.getAllUsers(page - 1, size);
@@ -340,15 +343,21 @@ const ManagementUser = () => {
                 disabled={form.getFieldValue(["role", "roleId"]) !== "4"}
                 allowClear
               >
-                <Option value="">None</Option>
-                {managers.map((manager) => (
+                {filteredManagers.map((manager) => (
                   <Option key={manager.userId} value={manager.userId}>
-                    {manager.name}
+                    {manager.email} - {manager.name}
                   </Option>
                 ))}
               </Select>
             </Form.Item>
           )}
+          <Form.Item label="Search Manager">
+            <Input
+              placeholder="Search by email"
+              value={managerSearchTerm}
+              onChange={(e) => setManagerSearchTerm(e.target.value)}
+            />
+          </Form.Item>
         </Form>
       </Modal>
       <Modal

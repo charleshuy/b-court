@@ -2,8 +2,24 @@ import apiClient from "./apiClient";
 
 const UserAPI = {
   register: async (userData) => {
-    const response = await apiClient.post("/auth/register", userData);
-    return response.data;
+    try {
+      const response = await apiClient.post("/auth/register", userData);
+      return response.data;
+    } catch (error) {
+      // Handle specific errors or return a generic error message
+      if (error.response) {
+        // Server responded with an error status code
+        throw new Error(error.response.data.message || "Registration failed.");
+      } else if (error.request) {
+        // Request was made but no response received
+        throw new Error("No response from server. Please try again later.");
+      } else {
+        // Something else happened while setting up the request
+        throw new Error(
+          "Failed to send request. Please check your network connection."
+        );
+      }
+    }
   },
 
   login: async (credentials) => {

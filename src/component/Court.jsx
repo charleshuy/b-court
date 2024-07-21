@@ -1,23 +1,33 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import CourtAPI from "../api/CourtAPI"; // Ensure this import path is correct
+import { Pagination } from "antd"; // Import Pagination from Ant Design
 
 const Court = () => {
   const [courts, setCourts] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
+  const [totalCourts, setTotalCourts] = useState(0);
 
   useEffect(() => {
-    const fetchCourts = async () => {
+    const fetchCourts = async (page, size) => {
       try {
-        const data = await CourtAPI.getCourts();
+        const data = await CourtAPI.getCourts(page - 1, size);
         console.log("Fetched courts data:", data);
-        setCourts(data);
+        setCourts(data.content);
+        setTotalCourts(data.totalElements);
       } catch (error) {
         console.error("Error fetching courts:", error);
       }
     };
 
-    fetchCourts();
-  }, []);
+    fetchCourts(currentPage, pageSize);
+  }, [currentPage, pageSize]);
+
+  const handlePageChange = (page, size) => {
+    setCurrentPage(page);
+    setPageSize(size);
+  };
 
   return (
     <div className="container mx-auto py-8">
@@ -44,9 +54,7 @@ const Court = () => {
                   {court.address}, {court.district.districtName},{" "}
                   {court.district.city.cityName}
                 </p>
-                <p className="text-gray-600 mt-2">
-                  {court.description || "Description not available"}
-                </p>
+
                 <p className="text-yellow-500 mt-2">{court.price}VND /h</p>
               </div>
               <Link to={`/court-detail/${court.courtId}`}>
@@ -57,6 +65,14 @@ const Court = () => {
             </div>
           </div>
         ))}
+      </div>
+      <div className="mt-8 flex justify-center">
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={totalCourts}
+          onChange={handlePageChange}
+        />
       </div>
     </div>
   );
