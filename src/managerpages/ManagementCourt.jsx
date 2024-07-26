@@ -85,7 +85,6 @@ const ManagementCourt = () => {
 
       setEditingCourt({
         courtName: "",
-        license: "",
         address: "",
         district: {
           districtId: "",
@@ -114,12 +113,14 @@ const ManagementCourt = () => {
         await CourtAPI.createCourt(courtData);
         message.success("Court added successfully");
       }
+
       setIsModalVisible(false);
       setEditingCourt(null);
       fetchInitialData();
     } catch (error) {
-      message.error("Failed to save court");
-      console.error("Failed to save court:", error);
+      // Handle other errors
+      console.error("An error occurred:", error); // For debugging
+      message.error(error.message);
     }
   };
 
@@ -359,14 +360,7 @@ const ManagementCourt = () => {
                 }
               />
             </Form.Item>
-            <Form.Item label="License">
-              <Input
-                value={editingCourt.license}
-                onChange={(e) =>
-                  setEditingCourt({ ...editingCourt, license: e.target.value })
-                }
-              />
-            </Form.Item>
+
             <Form.Item label="Address">
               <Input
                 value={editingCourt.address}
@@ -378,7 +372,11 @@ const ManagementCourt = () => {
                 }
               />
             </Form.Item>
-            <Form.Item label="City">
+            <Form.Item
+              label="City"
+              name="city"
+              rules={[{ required: true, message: "Please select a city" }]}
+            >
               <Select
                 value={editingCourt.district.city.cityId}
                 onChange={handleCityChange}
@@ -390,7 +388,12 @@ const ManagementCourt = () => {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item label="District">
+
+            <Form.Item
+              label="District"
+              name="district"
+              rules={[{ required: true, message: "Please select a district" }]}
+            >
               <Select
                 value={editingCourt.district.districtId}
                 onChange={handleDistrictChange}

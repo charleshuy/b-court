@@ -36,7 +36,7 @@ const Court = () => {
         {courts.map((court) => (
           <div
             key={court.courtId}
-            className="relative bg-white rounded-lg shadow-lg overflow-hidden border-2 border-transparent hover:border-orange-500 transition-all duration-300"
+            className="relative bg-white rounded-lg shadow-lg overflow-hidden border-2 border-transparent hover:border-orange-500 transition-all duration-300 flex flex-col"
           >
             <div className="overflow-hidden">
               <img
@@ -45,8 +45,8 @@ const Court = () => {
                 className="w-full h-48 object-cover transform transition-transform duration-300 hover:scale-110"
               />
             </div>
-            <div className="p-4 flex flex-col justify-between">
-              <div>
+            <div className="p-4 flex flex-col flex-1">
+              <div className="flex-1">
                 <h3 className="text-xl font-semibold mb-2">
                   {court.courtName}
                 </h3>
@@ -54,8 +54,7 @@ const Court = () => {
                   {court.address}, {court.district.districtName},{" "}
                   {court.district.city.cityName}
                 </p>
-
-                <p className="text-yellow-500 mt-2">{court.price}VND /h</p>
+                <p className="text-yellow-500 mt-2">{court.price} VND /h</p>
               </div>
               <Link to={`/court-detail/${court.courtId}`}>
                 <button className="mt-4 w-full py-2 bg-orange-500 text-white rounded hover:bg-orange-600">
@@ -66,6 +65,7 @@ const Court = () => {
           </div>
         ))}
       </div>
+
       <div className="mt-8 flex justify-center">
         <Pagination
           current={currentPage}

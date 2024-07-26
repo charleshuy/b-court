@@ -9,38 +9,38 @@ const { Option } = Select;
 const getUniqueDistricts = (courts) => {
   const districts = courts.map((court) => court.district.districtName);
   const uniqueDistricts = [...new Set(districts)];
-  return uniqueDistricts.sort(); // Sort the unique districts
+  return uniqueDistricts.sort();
 };
 
 const Shop = () => {
   const [courts, setCourts] = useState([]);
+  const [allCourts, setAllCourts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(8);
   const [totalCourts, setTotalCourts] = useState(0);
   const [filteredCourts, setFilteredCourts] = useState([]);
   const [selectedDistricts, setSelectedDistricts] = useState([]);
-  const [sortBy, setSortBy] = useState("price"); // default sorting by price
-  const [sortOrder, setSortOrder] = useState("desc"); // default descending
+  const [sortBy, setSortBy] = useState("courtName");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   useEffect(() => {
-    const fetchCourts = async () => {
+    const fetchAllCourts = async () => {
       try {
-        const response = await CourtAPI.getCourts(
-          currentPage - 1,
-          pageSize,
-          sortBy,
-          sortOrder
-        );
-        setCourts(response.content);
-        setFilteredCourts(response.content);
-        setTotalCourts(response.totalElements);
+        const response = await CourtAPI.getCourtsAdmin();
+        setAllCourts(response);
+        setFilteredCourts(response); // Initially set filtered courts to all courts
+        setTotalCourts(response.length); // Set total courts to length of all fetched courts
       } catch (error) {
-        console.error("Failed to fetch courts:", error);
+        console.error("Failed to fetch all courts:", error);
       }
     };
 
-    fetchCourts();
-  }, [currentPage, pageSize, sortBy, sortOrder]); // Add sortBy and sortOrder to dependency array
+    fetchAllCourts();
+  }, []);
+
+  useEffect(() => {
+    filterCourts(selectedDistricts);
+  }, [selectedDistricts, allCourts, sortBy, sortOrder, currentPage, pageSize]);
 
   const handleSorting = (value) => {
     if (value === "price_asc" || value === "price_desc") {
@@ -50,13 +50,16 @@ const Shop = () => {
       setSortBy("courtName");
       setSortOrder("asc");
     }
+    setCurrentPage(1); // Reset to the first page on sorting change
   };
 
   const handleSearch = (value) => {
-    const filtered = courts.filter((court) =>
+    const filtered = allCourts.filter((court) =>
       court.courtName.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredCourts(filtered);
+    setTotalCourts(filtered.length); // Update total courts to the length of filtered courts
+    setCurrentPage(1); // Reset to the first page on search
   };
 
   const handlePageChange = (page, pageSize) => {
@@ -66,11 +69,11 @@ const Shop = () => {
 
   const handleDistrictChange = (checkedValues) => {
     setSelectedDistricts(checkedValues);
-    filterCourts(checkedValues);
+    setCurrentPage(1); // Reset to the first page on district change
   };
 
   const filterCourts = (districts) => {
-    let filtered = courts;
+    let filtered = allCourts;
 
     if (districts.length > 0) {
       filtered = filtered.filter((court) =>
@@ -78,10 +81,27 @@ const Shop = () => {
       );
     }
 
-    setFilteredCourts(filtered);
+    // Implement sorting
+    if (sortBy) {
+      filtered.sort((a, b) => {
+        if (sortOrder === "asc") {
+          return a[sortBy] > b[sortBy] ? 1 : -1;
+        } else {
+          return a[sortBy] < b[sortBy] ? 1 : -1;
+        }
+      });
+    }
+
+    // Apply pagination
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginated = filtered.slice(startIndex, endIndex);
+
+    setFilteredCourts(paginated);
+    setTotalCourts(filtered.length); // Update total courts to the length of filtered courts
   };
 
-  const uniqueDistricts = getUniqueDistricts(courts);
+  const uniqueDistricts = getUniqueDistricts(allCourts);
 
   return (
     <div className="container mx-auto py-8">
@@ -128,29 +148,29 @@ const Shop = () => {
             {filteredCourts.map((court) => (
               <div
                 key={court.courtId}
-                className="relative bg-white rounded-lg shadow-lg overflow-hidden border-2 border-transparent hover:border-orange-500 transition-all duration-300"
+                className="relative bg-white rounded-lg shadow-lg overflow-hidden border-2 border-transparent hover:border-orange-500 transition-all duration-300 flex flex-col"
               >
                 <img
                   src={`http://localhost:8080/files/${court.fileId}`}
                   alt={court.courtName}
                   className="w-full h-48 object-cover"
                 />
-                <div className="p-4 flex flex-col justify-between h-full">
-                  <div>
+                <div className="flex flex-col p-4 flex-1">
+                  <div className="flex-1">
                     <h3 className="text-xl font-semibold mb-2">
                       {court.courtName}
                     </h3>
                     <p className="text-gray-600">{court.description}</p>
-                    <p className="text-yellow-500 mt-2">{court.price}VND/h</p>
+                    <p className="text-yellow-500 mt-2">{court.price} VND/h</p>
                     <p className="text-gray-500 mt-2">
                       {`${court.address}, ${court.district.districtName}, ${court.district.city.cityName}`}
                     </p>
-                    <Link to={`/court-detail/${court.courtId}`}>
-                      <button className="mt-4 bg-yellow-500 text-white px-4 py-2 rounded-full w-full">
-                        View Details
-                      </button>
-                    </Link>
                   </div>
+                  <Link to={`/court-detail/${court.courtId}`}>
+                    <button className="bg-yellow-500 text-white px-4 py-2 rounded-full w-full mt-4">
+                      View Details
+                    </button>
+                  </Link>
                 </div>
               </div>
             ))}

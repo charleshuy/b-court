@@ -18,6 +18,9 @@ const SideBar = () => {
         <Menu.Item key="2" icon={<UserOutlined />}>
           <Link to="/admin/users">Management User</Link>
         </Menu.Item>
+        <Menu.Item key="3" icon={<UserOutlined />}>
+          <Link to="/admin/dashboard">Dashboard</Link>
+        </Menu.Item>
       </Menu>
     </div>
   );

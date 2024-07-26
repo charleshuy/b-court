@@ -4,8 +4,8 @@ import { Table, Tooltip } from "antd";
 import OrderAPI from "../api/OrderAPI"; // Make sure to import your OrderAPI
 import moment from "moment"; // Import moment for time formatting
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -50,11 +50,12 @@ const Order = () => {
     );
   };
 
-  // Function to format data for the line chart
   const formatDailyOrdersData = () => {
     const orderCountsByDate = {};
     orders.forEach((order) => {
-      const orderDate = moment(order.date, "YYYY-MM-DD").format("YYYY-MM-DD");
+      const orderDate = moment(order.bookingDate, "YYYY-MM-DD").format(
+        "YYYY-MM-DD"
+      );
       if (orderCountsByDate[orderDate]) {
         orderCountsByDate[orderDate] += 1;
       } else {
@@ -138,13 +139,13 @@ const Order = () => {
     <div>
       <div style={{ marginBottom: 20 }}>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={dailyOrdersData}>
+          <BarChart data={dailyOrdersData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
             <RechartsTooltip content={chartTooltip} />
-            <Line type="monotone" dataKey="orders" stroke="#1890ff" />
-          </LineChart>
+            <Bar dataKey="orders" fill="#1890ff" />
+          </BarChart>
         </ResponsiveContainer>
       </div>
       <Table columns={columns} dataSource={orders} />

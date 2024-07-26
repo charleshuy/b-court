@@ -57,8 +57,16 @@ const CourtAPI = {
       const response = await apiClient.post("/courts", courtData);
       return response.data;
     } catch (error) {
-      console.error("Can't create court:", error);
-      throw error;
+      if (error.response && error.response.status === 400) {
+        // Validation error
+        const errorMessage = error.response.data; // Expecting a single error message
+        console.error("Validation error:", errorMessage);
+        throw new Error(errorMessage); // Throw the single error message
+      } else {
+        // Other errors
+        console.error(`Can't update court ${courtId}:`, error);
+        throw error;
+      }
     }
   },
 
@@ -70,10 +78,19 @@ const CourtAPI = {
       );
       return response.data;
     } catch (error) {
-      console.error(`Can't update court ${courtId}:`, error);
-      throw error;
+      if (error.response && error.response.status === 400) {
+        // Validation error
+        const errorMessage = error.response.data; // Expecting a single error message
+        console.error("Validation error:", errorMessage);
+        throw new Error(errorMessage); // Throw the single error message
+      } else {
+        // Other errors
+        console.error(`Can't update court ${courtId}:`, error);
+        throw error;
+      }
     }
   },
+
   deleteCourt: async (courtId) => {
     const response = await apiClient.delete(`/courts/delete/${courtId}`);
     return response.data;

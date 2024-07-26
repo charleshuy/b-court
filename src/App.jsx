@@ -27,6 +27,7 @@ import UserCheckIn from "./staffpages/UserCheckin";
 import SideBarv3 from "./adminpages/Sidebarv3";
 import ManagementUser from "./adminpages/ManagementUser";
 import ApproveCourt from "./adminpages/ApproveCourt";
+import Dashboard from "./adminpages/Dashboard";
 
 import { useState, useEffect } from "react";
 import Profile from "./userPages/Profile";
@@ -35,7 +36,6 @@ import ForgotPassword from "./component/ForgotPassword";
 
 import FailPage from "./userPages/DepositFail";
 import SuccessPage from "./userPages/DepositSuccess";
-
 import VerifyEmailSuccessPage from "./userPages/VerifyEmailSuccessPage";
 
 function App() {
@@ -65,7 +65,6 @@ function App() {
               <Banner />
               <Features />
               <Court />
-
             </>
           }
         />
@@ -209,6 +208,18 @@ function App() {
               <div className="flex-1">
                 <Headerv2 />
                 <ManagementUser />
+              </div>
+            </div>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <div className="flex">
+              <SideBarv3 />
+              <div className="flex-1">
+                <Headerv2 />
+                <Dashboard />
               </div>
             </div>
           }

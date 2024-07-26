@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Input, message } from "antd";
-import { Link } from "react-router-dom";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import UserAPI from "../api/UserAPI";
 import { jwtDecode } from "jwt-decode";
-
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");
@@ -71,17 +69,15 @@ const Login = ({ onLogin }) => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-
-        {/* <a href="#" className="mb-4 text-green-400">
-          Forgot Password?
-        </a> */}
-
         <button
           className="bg-lime-500 hover:bg-amber-500 text-white px-8 py-4 h-10 flex items-center justify-center w-1/3 h-8 rounded-full"
           onClick={handleLogin}
         >
           Login
         </button>
+        <Link to="/" className="mt-4 text-green-400 hover:text-green-500">
+          Home
+        </Link>
       </div>
     </div>
   );

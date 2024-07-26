@@ -1,9 +1,11 @@
 import apiClient from "./apiClient";
 
 const OrderAPI = {
-  getOrders: async () => {
+  getOrders: async (page = 0, size = 1000) => {
     try {
-      const response = await apiClient.get("/orders"); // Ensure you're using the correct method and endpoint
+      const response = await apiClient.get("/orders", {
+        params: { page, size },
+      });
       return response.data.content; // Return the content array
     } catch (error) {
       console.error("Can't fetch orders:", error);
@@ -31,7 +33,7 @@ const OrderAPI = {
       throw error;
     }
   },
-  getOrdersByCourtId: async (courtId, page = 0, size = 10) => {
+  getOrdersByCourtId: async (courtId, page = 0, size = 50) => {
     try {
       const response = await apiClient.get(`/orders/court/${courtId}`, {
         params: { page, size },
