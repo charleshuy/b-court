@@ -117,7 +117,7 @@ const Dashboard = () => {
     ],
     stroke: {
       width: [2],
-      curve: 'straight',
+      curve: 'smooth',
     },
     grid: {
       xaxis: {
