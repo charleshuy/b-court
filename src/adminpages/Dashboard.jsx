@@ -24,7 +24,7 @@ const Dashboard = () => {
         const fetchedOrders = await OrderAPI.getOrders();
         setOrders(
           fetchedOrders.map((order) => ({ ...order, key: order.orderId }))
-        ); // Ensure each order has a key
+        );
       } catch (error) {
         console.error('Failed to fetch orders:', error);
       }
@@ -59,7 +59,6 @@ const Dashboard = () => {
         amount: orderAmountsByDate[date],
       }));
 
-      // Sort data by date
       countData.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
       amountData.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
 
@@ -71,6 +70,18 @@ const Dashboard = () => {
     setAmountData(amountData);
     setCategories(countData.map((data) => data.date));
   }, [orders]);
+
+  const getOldestAndNewestDates = (data) => {
+    if (data.length === 0) return { oldest: null, newest: null };
+
+    const dates = data.map(item => moment(item.date));
+    const oldestDate = moment.min(dates).format('YYYY-MM-DD');
+    const newestDate = moment.max(dates).format('YYYY-MM-DD');
+
+    return { oldest: oldestDate, newest: newestDate };
+  };
+  const { oldest: oldestCountDate, newest: newestCountDate } = getOldestAndNewestDates(countData);
+  const { oldest: oldestAmountDate, newest: newestAmountDate } = getOldestAndNewestDates(amountData);
 
   const apexOptions = {
     legend: {
@@ -94,8 +105,20 @@ const Dashboard = () => {
       toolbar: {
         show: false,
       },
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150,
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350,
+        },
+      },
     },
-
     responsive: [
       {
         breakpoint: 1024,
@@ -105,7 +128,6 @@ const Dashboard = () => {
           },
         },
       },
-
       {
         breakpoint: 1366,
         options: {
@@ -181,33 +203,87 @@ const Dashboard = () => {
     return null;
   };
 
+  const apexBarOptions = {
+    colors: ['#3C50E0', '#80CAEE'],
+    chart: {
+      fontFamily: 'Satoshi, sans-serif',
+      type: 'bar',
+      height: 335,
+      stacked: true,
+      toolbar: {
+        show: false,
+      },
+      zoom: {
+        enabled: false,
+      },
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150,
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350,
+        },
+      },
+    },
+    responsive: [
+      {
+        breakpoint: 1536,
+        options: {
+          plotOptions: {
+            bar: {
+              borderRadius: 0,
+              columnWidth: '25%',
+            },
+          },
+        },
+      },
+    ],
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        borderRadius: 0,
+        columnWidth: '25%',
+        borderRadiusApplication: 'end',
+        borderRadiusWhenStacked: 'last',
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    xaxis: {
+      categories: categories,
+    },
+    legend: {
+      position: 'top',
+      horizontalAlign: 'left',
+      fontFamily: 'Satoshi',
+      fontWeight: 500,
+      fontSize: '14px',
+      markers: {
+        radius: 99,
+      },
+    },
+    fill: {
+      opacity: 1,
+    },
+  };
+
   return (
-    <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginBottom: 20,
-        }}
-      >
-        <div style={{ flex: 1, marginRight: 10 }}>
-          <div className="col-span-12 rounded-sm border border-stroke items-center bg-white px-5 pt-7.5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:col-span-8">
-            <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
-              <div className="flex w-full flex-wrap gap-3 sm:gap-5">
-                <div className="flex min-w-47.5">
-                  <span className="mt-1 mr-2 flex h-4 w-full max-w-4 items-center justify-center rounded-full border border-cyan-400">
-                    <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-cyan-400"></span>
-                  </span>
-                  <div className="w-full">
-                    <p className="font-semibold text-primary">Total Book Count</p>
-                    <p className="text-sm font-medium" style={{ width: '150%' }}>12.04.2022 - 12.05.2022</p>
-                  </div>
-
-
-                </div>
-              </div>
+    <div className="p-4">
+      <div className="flex justify-between mb-4">
+        <div className="flex-1 mr-2">
+          <div className="rounded-sm border border-stroke bg-white px-5 pt-5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark">
+            <div className="flex justify-between items-center mb-4">
+              <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-cyan-400"></span>
+              <h3 className="font-semibold text-primary" style={{ width: '20%' }}>Order Count</h3>
+              <p className="text-sm font-medium">{oldestCountDate} - {newestCountDate}</p>
             </div>
-            <div id="chartOne" className="-ml-5">
+            <div className="overflow-hidden">
               <ReactApexChart
                 options={apexOptions}
                 series={[{ name: 'Order Count', data: countData.map((data) => data.orders) }]}
@@ -216,24 +292,30 @@ const Dashboard = () => {
               />
             </div>
           </div>
-          <div style={{ textAlign: 'center', marginTop: 10 }}>
-            <h3>Order Count</h3>
+        </div>
+        <div className="flex-1 ml-2">
+          <div className="rounded-sm border border-stroke bg-white px-5 pt-5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark">
+            <div className="flex justify-between items-center mb-4">
+
+              <h3 className="font-semibold text-primary">Order Amount</h3>
+              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+            </div>
+            <div className="overflow-hidden">
+              <ReactApexChart
+                options={apexBarOptions}
+                series={[{ name: 'Amount', data: amountData.map((data) => data.amount) }]}
+                type="bar"
+                height={350}
+              />
+            </div>
           </div>
         </div>
-        <div style={{ flex: 1, marginLeft: 10 }}>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={amountData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <RechartsTooltip content={chartTooltip} />
-              <Line type="monotone" dataKey="amount" stroke="#ff4d4f" />
-            </LineChart>
-          </ResponsiveContainer>
-          <div style={{ textAlign: 'center', marginTop: 10 }}>
-            <h3>Order Amount</h3>
-          </div>
-        </div>
+      </div>
+      <div className="mt-4">
+        <p className="text-sm">Order Count - Oldest Date: {oldestCountDate}</p>
+        <p className="text-sm">Order Count - Newest Date: {newestCountDate}</p>
+        <p className="text-sm">Order Amount - Oldest Date: {oldestAmountDate}</p>
+        <p className="text-sm">Order Amount - Newest Date: {newestAmountDate}</p>
       </div>
     </div>
   );
