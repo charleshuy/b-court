@@ -2,64 +2,37 @@ import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import OrderAPI from '../api/OrderAPI';
 import moment from 'moment';
-import CourtAPI from '../api/CourtAPI';
-import {FaRegCalendarMinus} from 'react-icons/fa';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { FaRegCalendarMinus } from 'react-icons/fa';
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
   const [countData, setCountData] = useState([]);
   const [amountData, setAmountData] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [totalAccounts, setTotalAccounts] = useState([]);
-  const [totalAmount, setTotalAmount] = useState([]);
-
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const fetchedOrders = await OrderAPI.getOrders();
-        setOrders(
-          fetchedOrders.map((order) => ({ ...order, key: order.orderId }))
-        );
+        const ordersWithKeys = fetchedOrders.map((order) => ({
+          ...order,
+          key: order.orderId,
+        }));
+        setOrders(ordersWithKeys);
+
+        const totalOrders = fetchedOrders.length;
+        const totalOrderAmount = fetchedOrders.reduce((acc, order) => acc + order.amount, 0);
+
+        setTotalCount(totalOrders);
+        setTotalAmount(totalOrderAmount);
       } catch (error) {
         console.error('Failed to fetch orders:', error);
       }
     };
 
     fetchOrders();
-  }, []);
-
-  useEffect(() => {
-    const fetchTotals = async () => {
-      try {
-        const fetchedTotalAccounts = await CourtAPI.getTotalAccounts();
-        if (typeof fetchedTotalAccounts === 'number') {
-          setTotalAccounts(fetchedTotalAccounts);
-        } else {
-          console.error('Unexpected data format for total accounts:', fetchedTotalAccounts);
-        }
-
-        const fetchedTotalAmount = await OrderAPI.getTotalAmount();
-        if (typeof fetchedTotalAmount === 'number') {
-          setTotalAmount(fetchedTotalAmount);
-        } else {
-          console.error('Unexpected data format for total amount:', fetchedTotalAmount);
-        }
-      } catch (error) {
-        console.error('Failed to fetch totals:', error);
-      }
-    };
-
-    fetchTotals();
   }, []);
 
   useEffect(() => {
@@ -103,12 +76,13 @@ const Dashboard = () => {
   const getOldestAndNewestDates = (data) => {
     if (data.length === 0) return { oldest: null, newest: null };
 
-    const dates = data.map(item => moment(item.date));
+    const dates = data.map((item) => moment(item.date));
     const oldestDate = moment.min(dates).format('YYYY-MM-DD');
     const newestDate = moment.max(dates).format('YYYY-MM-DD');
 
     return { oldest: oldestDate, newest: newestDate };
   };
+
   const { oldest: oldestCountDate, newest: newestCountDate } = getOldestAndNewestDates(countData);
   const { oldest: oldestAmountDate, newest: newestAmountDate } = getOldestAndNewestDates(amountData);
 
@@ -325,9 +299,8 @@ const Dashboard = () => {
         <div className="flex-1 ml-2">
           <div className="rounded-sm border border-stroke bg-white px-5 pt-5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="flex justify-between items-center mb-4">
-
               <h3 className="font-semibold text-primary">Order Amount</h3>
-              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+              <p className="text-sm font-medium">{oldestAmountDate} - {newestAmountDate}</p>
             </div>
             <div className="overflow-hidden">
               <ReactApexChart
@@ -349,8 +322,8 @@ const Dashboard = () => {
       <div className="grid grid-cols-2 gap-[30px] mt-[25px] pb-[15px]">
         <div className="h-[100px] rounded-[8px] bg-white border-l-[4px] border-[#4e73df] flex items-center justify-between px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out">
           <div>
-            <h2 className="text-[#B589DF] text-[11px] leading-[17px] font-bold">Total Account</h2>
-            <h1 className="text-[20px] leading-[24px] font-bold text-[#5a5c69] mt-[5px]">{totalAccounts}</h1>
+            <h2 className="text-[#B589DF] text-[11px] leading-[17px] font-bold">Total Count</h2>
+            <h1 className="text-[20px] leading-[24px] font-bold text-[#5a5c69] mt-[5px]">{totalCount}</h1>
           </div>
           <FaRegCalendarMinus fontSize={28} color="" />
         </div>
