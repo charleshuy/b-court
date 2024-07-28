@@ -107,8 +107,13 @@ const CourtAPI = {
   },
 
   getTotalAccounts: async (courtId) => {
-    const response = await axios.get('/api/accounts/total');
-  return response.data.totalAccounts;
+    try {
+      const response = await axios.get(`/api/accounts/total?courtId=${courtId}`);
+      return response.data.totalAccounts;
+    } catch (error) {
+      console.error('Error fetching total accounts:', error);
+      throw error;
+    }
   },
 };
 

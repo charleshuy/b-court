@@ -109,9 +109,20 @@ const OrderAPI = {
     }
   },
   
-  getTotalAmount: async () => {
-    const response = await axios.get('/api/orders/totalAmount');
-  return response.data.totalAmount;
+ getTotalAmount: async () => {
+    try {
+      console.log('Fetching total amount...');
+      const response = await axios.get('/api/orders/totalAmount');
+      console.log('Response:', response);
+      if (response.data && typeof response.data.totalAmount === 'number') {
+        return response.data.totalAmount;
+      } else {
+        throw new Error('Unexpected data format');
+      }
+    } catch (error) {
+      console.error('Error fetching total amount:', error);
+      throw error;
+    }
   },
 };
 
