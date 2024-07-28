@@ -66,13 +66,13 @@ const TopSideButtons = ({ removeFilter, applyFilter, applySearch }) => {
     );
 };
 
-function Transactions() {
+function Transactions({ userId }) {
     const [transactions, setTransactions] = useState([]);
 
     useEffect(() => {
         const fetchTransactions = async () => {
             try {
-                const fetchedTransactions = await OrderAPI.getOrdersByUserId(1); // Replace with actual userId
+                const fetchedTransactions = await OrderAPI.getOrdersByUserId(userId); // Use the passed userId prop
                 setTransactions(fetchedTransactions);
             } catch (error) {
                 console.error("Failed to fetch transactions:", error);
@@ -80,10 +80,20 @@ function Transactions() {
         };
 
         fetchTransactions();
-    }, []);
+    }, [userId]);
 
     const removeFilter = () => {
-        setTransactions(transactions);
+        // Call the fetchTransactions again to reset the transactions
+        const fetchTransactions = async () => {
+            try {
+                const fetchedTransactions = await OrderAPI.getOrdersByUserId(userId);
+                setTransactions(fetchedTransactions);
+            } catch (error) {
+                console.error("Failed to fetch transactions:", error);
+            }
+        };
+
+        fetchTransactions();
     };
 
     const applyFilter = (params) => {

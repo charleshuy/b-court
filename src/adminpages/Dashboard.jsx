@@ -2,12 +2,6 @@ import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import OrderAPI from '../api/OrderAPI';
 import moment from 'moment';
-<<<<<<< HEAD
-=======
-import CourtAPI from '../api/CourtAPI';
-import {FaRegCalendarMinus} from 'react-icons/fa';
-
->>>>>>> 11f7d202c02cbc87874d164396de82f9c92b3761
 
 
 const Dashboard = () => {
@@ -327,32 +321,6 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-<<<<<<< HEAD
-
-=======
-      <div className="mt-4">
-        <p className="text-sm">Order Count - Oldest Date: {oldestCountDate}</p>
-        <p className="text-sm">Order Count - Newest Date: {newestCountDate}</p>
-        <p className="text-sm">Order Amount - Oldest Date: {oldestAmountDate}</p>
-        <p className="text-sm">Order Amount - Newest Date: {newestAmountDate}</p>
-      </div>
-      <div className="grid grid-cols-2 gap-[30px] mt-[25px] pb-[15px]">
-        <div className="h-[100px] rounded-[8px] bg-white border-l-[4px] border-[#4e73df] flex items-center justify-between px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out">
-          <div>
-            <h2 className="text-[#B589DF] text-[11px] leading-[17px] font-bold">Total Account</h2>
-            <h1 className="text-[20px] leading-[24px] font-bold text-[#5a5c69] mt-[5px]">{totalAccounts}</h1>
-          </div>
-          <FaRegCalendarMinus fontSize={28} color="" />
-        </div>
-        <div className="h-[100px] rounded-[8px] bg-white border-l-[4px] border-[#4e73df] flex items-center justify-between px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out">
-          <div>
-            <h2 className="text-[#B589DF] text-[11px] leading-[17px] font-bold">Total Amount</h2>
-            <h1 className="text-[20px] leading-[24px] font-bold text-[#5a5c69] mt-[5px]">{totalAmount}</h1>
-          </div>
-          <FaRegCalendarMinus fontSize={28} color="" />
-        </div>
-      </div>
->>>>>>> 11f7d202c02cbc87874d164396de82f9c92b3761
     </div>
   );
 };
