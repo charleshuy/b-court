@@ -1,5 +1,6 @@
 // /src/api/CourtAPI.jsx
 import apiClient from "./apiClient";
+import axios from 'axios';
 
 const CourtAPI = {
   getCourts: async (
@@ -101,6 +102,16 @@ const CourtAPI = {
       return response.data;
     } catch (error) {
       console.error(`Can't fetch court with ID ${courtId}:`, error);
+      throw error;
+    }
+  },
+
+  getTotalAccounts: async (courtId) => {
+    try {
+      const response = await axios.get(`/api/accounts/total?courtId=${courtId}`);
+      return response.data.totalAccounts;
+    } catch (error) {
+      console.error('Error fetching total accounts:', error);
       throw error;
     }
   },
