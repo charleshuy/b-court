@@ -1,5 +1,5 @@
 import apiClient from "./apiClient";
-
+import axios from 'axios';
 const OrderAPI = {
   getOrders: async (page = 0, size = 1000) => {
     try {
@@ -107,6 +107,11 @@ const OrderAPI = {
       console.error(`Can't process refund for order ${orderId}:`, error);
       throw error;
     }
+  },
+  
+  getTotalAmount: async () => {
+    const response = await axios.get('/api/orders/totalAmount');
+  return response.data.totalAmount;
   },
 };
 
