@@ -2,15 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import OrderAPI from '../api/OrderAPI';
 import moment from 'moment';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-} from 'recharts';
+
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);

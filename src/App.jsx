@@ -16,8 +16,8 @@ import Headerv2 from "./managerpages/Headerv2";
 import SideBar from "./managerpages/Sidebar";
 import Login from "./component/Login";
 import Signup from "./component/Signup";
-import WalletComponent from "./component/WalletComponent"; // Import WalletComponent
-import PaymentReturn from "./component//PaymentReturn";
+import WalletComponent from "./component/WalletComponent";
+import PaymentReturn from "./component/PaymentReturn";
 import Order from "./managerpages/ManagementOrder";
 import ManagementCourt from "./managerpages/ManagementCourt";
 import ManagementSlot from "./managerpages/ManagementSlot";
@@ -28,6 +28,7 @@ import SideBarv3 from "./adminpages/Sidebarv3";
 import ManagementUser from "./adminpages/ManagementUser";
 import ApproveCourt from "./adminpages/ApproveCourt";
 import Dashboard from "./adminpages/Dashboard";
+import Transactions from "./adminpages/Transactions"; // Import Transactions component
 
 import { useState, useEffect } from "react";
 import Profile from "./userPages/Profile";
@@ -220,6 +221,18 @@ function App() {
               <div className="flex-1">
                 <Headerv2 />
                 <Dashboard />
+              </div>
+            </div>
+          }
+        />
+        <Route
+          path="/admin/transactions"
+          element={
+            <div className="flex">
+              <SideBarv3 />
+              <div className="flex-1">
+                <Headerv2 />
+                <Transactions />
               </div>
             </div>
           }

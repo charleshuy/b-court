@@ -1,5 +1,5 @@
 import { Menu } from "antd";
-import { AppstoreOutlined, UserOutlined, AreaChartOutlined } from "@ant-design/icons";
+import { AppstoreOutlined, UserOutlined, AreaChartOutlined, DollarOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import bad3Image from "../assets/images/bad3.png";
 
@@ -20,6 +20,9 @@ const SideBar = () => {
         </Menu.Item>
         <Menu.Item key="3" icon={<AreaChartOutlined />}>
           <Link to="/admin/dashboard">Dashboard</Link>
+        </Menu.Item>
+        <Menu.Item key="4" icon={<DollarOutlined />}>
+          <Link to="/admin/transactions">Transactions</Link>
         </Menu.Item>
       </Menu>
     </div>
