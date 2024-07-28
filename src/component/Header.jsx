@@ -71,8 +71,27 @@ const Header = ({ isLoggedIn, onLogout }) => {
     </Menu>
   );
 
+  const [scrollY, setScrollY] = useState(0);
+
+  const handleScroll = () => {
+    setScrollY(window.scrollY);
+  };
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const headerStyle = {
+    height: scrollY > 50 ? '150px' : '170px',
+    backgroundColor: scrollY > 50 ? '#444B5D' : 'white',
+    transition: 'height 0.5s, background-color 0.3s',
+  };
+
   return (
-    <header className="sticky top-0 z-20 bg-white">
+    <header className="sticky top-0 z-20" style={headerStyle}>
       <div className="container mx-auto p-4 flex justify-between items-center bg-lime-500 rounded-xl relative z-10 text-white">
         <div className="flex items-center space-x-4">
           <FiMail className="text-xl" />
@@ -98,7 +117,7 @@ const Header = ({ isLoggedIn, onLogout }) => {
               />
             </Link>
           </div>
-          <Menu mode="horizontal" className="bg-white flex-1 ml-36">
+          <Menu mode="horizontal" className="bg-white rounded-lg flex-1 ml-36 ">
             <Menu.Item key="home">
               <Link to="/">Home</Link>
             </Menu.Item>
