@@ -1,4 +1,6 @@
 import apiClient from "./apiClient";
+import axios from 'axios';
+
 
 const OrderAPI = {
   getOrders: async (page = 0, size = 1000) => {
@@ -108,6 +110,22 @@ const OrderAPI = {
       throw error;
     }
   },
+getTotalAmount: async () => {
+    try {
+      console.log('Fetching total amount...');
+      const response = await axios.get('/api/orders/totalAmount');
+      console.log('Response:', response);
+      if (response.data && typeof response.data.totalAmount === 'number') {
+        return response.data.totalAmount;
+      } else {
+        throw new Error('Unexpected data format');
+      }
+    } catch (error) {
+      console.error('Error fetching total amount:', error);
+      throw error;
+    }
+  },
+
 };
 
 export default OrderAPI;
