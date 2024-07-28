@@ -2,23 +2,33 @@ import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import OrderAPI from '../api/OrderAPI';
 import moment from 'moment';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMoneyBill, faUsers } from '@fortawesome/free-solid-svg-icons';
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
   const [countData, setCountData] = useState([]);
   const [amountData, setAmountData] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [totalAccounts, setTotalAccounts] = useState([]);
-  const [totalAmount, setTotalAmount] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [dateRange, setDateRange] = useState('day'); // Default is day
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const fetchedOrders = await OrderAPI.getOrders();
-        setOrders(
-          fetchedOrders.map((order) => ({ ...order, key: order.orderId }))
-        );
+        const ordersWithKeys = fetchedOrders.map((order) => ({
+          ...order,
+          key: order.orderId,
+        }));
+        setOrders(ordersWithKeys);
+
+        const totalOrders = fetchedOrders.length; // Calculate total count
+        const totalOrderAmount = fetchedOrders.reduce((acc, order) => acc + order.amount, 0); // Calculate total amount
+
+        setTotalCount(totalOrders); // Set total count in state
+        setTotalAmount(totalOrderAmount); // Set total amount in state
       } catch (error) {
         console.error('Failed to fetch orders:', error);
       }
@@ -27,71 +37,51 @@ const Dashboard = () => {
     fetchOrders();
   }, []);
 
-  useEffect(() => {
-    const fetchTotals = async () => {
-      try {
-        const fetchedTotalAccounts = await CourtAPI.getTotalAccounts();
-        setTotalAccounts(fetchedTotalAccounts);
+  const formatOrdersData = () => {
+    const orderCountsByDate = {};
+    const orderAmountsByDate = {};
 
-        const fetchedTotalAmount = await OrderAPI.getTotalAmount();
-        setTotalAmount(fetchedTotalAmount);
-      } catch (error) {
-        console.error('Failed to fetch totals:', error);
+    orders.forEach((order) => {
+      let orderDate;
+      if (dateRange === 'day') {
+        orderDate = moment(order.date, 'YYYY-MM-DD').format('YYYY-MM-DD');
+      } else if (dateRange === 'week') {
+        orderDate = moment(order.date, 'YYYY-MM-DD').startOf('week').format('YYYY-MM-DD');
+      } else if (dateRange === 'month') {
+        orderDate = moment(order.date, 'YYYY-MM-DD').startOf('month').format('YYYY-MM-DD');
       }
-    };
 
-    fetchTotals();
-  }, []);
+      if (orderCountsByDate[orderDate]) {
+        orderCountsByDate[orderDate] += 1;
+        orderAmountsByDate[orderDate] += order.amount;
+      } else {
+        orderCountsByDate[orderDate] = 1;
+        orderAmountsByDate[orderDate] = order.amount;
+      }
+    });
+
+    const countData = Object.keys(orderCountsByDate).map((date) => ({
+      date,
+      orders: orderCountsByDate[date],
+    }));
+
+    const amountData = Object.keys(orderAmountsByDate).map((date) => ({
+      date,
+      amount: orderAmountsByDate[date],
+    }));
+
+    countData.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
+    amountData.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
+
+    return { countData, amountData };
+  };
 
   useEffect(() => {
-    const formatDailyOrdersData = () => {
-      const orderCountsByDate = {};
-      const orderAmountsByDate = {};
-
-      orders.forEach((order) => {
-        const orderDate = moment(order.date, 'YYYY-MM-DD').format('YYYY-MM-DD');
-        if (orderCountsByDate[orderDate]) {
-          orderCountsByDate[orderDate] += 1;
-          orderAmountsByDate[orderDate] += order.amount;
-        } else {
-          orderCountsByDate[orderDate] = 1;
-          orderAmountsByDate[orderDate] = order.amount;
-        }
-      });
-
-      const countData = Object.keys(orderCountsByDate).map((date) => ({
-        date,
-        orders: orderCountsByDate[date],
-      }));
-
-      const amountData = Object.keys(orderAmountsByDate).map((date) => ({
-        date,
-        amount: orderAmountsByDate[date],
-      }));
-
-      countData.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
-      amountData.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
-
-      return { countData, amountData };
-    };
-
-    const { countData, amountData } = formatDailyOrdersData();
+    const { countData, amountData } = formatOrdersData();
     setCountData(countData);
     setAmountData(amountData);
     setCategories(countData.map((data) => data.date));
-  }, [orders]);
-
-  const getOldestAndNewestDates = (data) => {
-    if (data.length === 0) return { oldest: null, newest: null };
-
-    const dates = data.map(item => moment(item.date));
-    const oldestDate = moment.min(dates).format('YYYY-MM-DD');
-    const newestDate = moment.max(dates).format('YYYY-MM-DD');
-
-    return { oldest: oldestDate, newest: newestDate };
-  };
-  const { oldest: oldestCountDate, newest: newestCountDate } = getOldestAndNewestDates(countData);
-  const { oldest: oldestAmountDate, newest: newestAmountDate } = getOldestAndNewestDates(amountData);
+  }, [orders, dateRange]);
 
   const apexOptions = {
     legend: {
@@ -200,19 +190,6 @@ const Dashboard = () => {
     },
   };
 
-  const chartTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="custom-tooltip">
-          <p>{`Date: ${label}`}</p>
-          <p>{`Value: ${payload[0].value}`}</p>
-        </div>
-      );
-    }
-
-    return null;
-  };
-
   const apexBarOptions = {
     colors: ['#3C50E0', '#80CAEE'],
     chart: {
@@ -286,12 +263,39 @@ const Dashboard = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between mb-4">
+        <button onClick={() => setDateRange('day')} className={`px-4 py-2 ${dateRange === 'day' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Day</button>
+        <button onClick={() => setDateRange('week')} className={`px-4 py-2 ${dateRange === 'week' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Week</button>
+        <button onClick={() => setDateRange('month')} className={`px-4 py-2 ${dateRange === 'month' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Month</button>
+      </div>
+
+      <div className="flex justify-between mb-4">
+        <div className="w-1/2 mr-2 p-4 bg-white rounded shadow">
+          <div className="flex items-center mb-2">
+            <FontAwesomeIcon icon={faUsers} className="text-blue-500 mr-2" />
+            <h4 className="text-lg font-semibold">Total Orders Count</h4>
+          </div>
+          <div className="flex items-baseline">
+            <p className="text-2xl font-bold">{totalCount.toLocaleString()}</p>
+            <p className="ml-2 text-green-500 text-sm">0.43% ↑</p>
+          </div>
+        </div>
+        <div className="w-1/2 ml-2 p-4 bg-white rounded shadow">
+          <div className="flex items-center mb-2">
+            <FontAwesomeIcon icon={faMoneyBill} className="text-blue-500 mr-2" />
+            <h4 className="text-lg font-semibold">Total Revenue Amount</h4>
+          </div>
+          <div className="flex items-baseline">
+            <p className="text-2xl font-bold">${totalAmount.toLocaleString()}</p>
+            <p className="ml-2 text-green-500 text-sm">0.43% ↑</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-between mb-4">
         <div className="flex-1 mr-2">
           <div className="rounded-sm border border-stroke bg-white px-5 pt-5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="flex justify-between items-center mb-4">
-
               <h3 className="font-semibold text-primary" style={{ width: '20%' }}>Order Count</h3>
-              <p className="text-sm font-medium">{oldestCountDate} - {newestCountDate}</p>
             </div>
             <div className="overflow-hidden">
               <ReactApexChart
@@ -303,12 +307,11 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
         <div className="flex-1 ml-2">
           <div className="rounded-sm border border-stroke bg-white px-5 pt-5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="flex justify-between items-center mb-4">
-
               <h3 className="font-semibold text-primary">Order Amount</h3>
-              <p className="text-sm font-medium">{oldestAmountDate} - {newestAmountDate}</p>
             </div>
             <div className="overflow-hidden">
               <ReactApexChart
