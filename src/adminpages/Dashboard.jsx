@@ -279,7 +279,7 @@ const Dashboard = () => {
         <div className="flex-1 mr-2">
           <div className="rounded-sm border border-stroke bg-white px-5 pt-5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="flex justify-between items-center mb-4">
-              <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-cyan-400"></span>
+
               <h3 className="font-semibold text-primary" style={{ width: '20%' }}>Order Count</h3>
               <p className="text-sm font-medium">{oldestCountDate} - {newestCountDate}</p>
             </div>
@@ -298,7 +298,7 @@ const Dashboard = () => {
             <div className="flex justify-between items-center mb-4">
 
               <h3 className="font-semibold text-primary">Order Amount</h3>
-              <p className="text-sm font-medium">12.04.2022 - 12.05.2022</p>
+              <p className="text-sm font-medium">{oldestAmountDate} - {newestAmountDate}</p>
             </div>
             <div className="overflow-hidden">
               <ReactApexChart
@@ -311,12 +311,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-      <div className="mt-4">
-        <p className="text-sm">Order Count - Oldest Date: {oldestCountDate}</p>
-        <p className="text-sm">Order Count - Newest Date: {newestCountDate}</p>
-        <p className="text-sm">Order Amount - Oldest Date: {oldestAmountDate}</p>
-        <p className="text-sm">Order Amount - Newest Date: {newestAmountDate}</p>
-      </div>
+
     </div>
   );
 };
