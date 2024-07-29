@@ -1,4 +1,5 @@
 import apiClient from "./apiClient";
+import axios from "axios";
 
 const RoleAPI = {
   // Method to create a new role
@@ -55,6 +56,36 @@ const RoleAPI = {
       throw error;
     }
   },
+
+  getTotalCustomers: async (CustomerId) => {
+    try {
+      const response = await apiClient.get(`${CustomerId}/customers/total`);
+      return response.data.totalCustomers;
+    } catch (error) {
+      console.error('Failed to fetch total customers:', error);
+      throw error;
+    }
+  },
+  
+  getTotalStaff: async () => {
+    try {
+      const response = await axios.get(`api/staff/total`);
+      return response.data.totalStaff;
+    } catch (error) {
+      console.error('Failed to fetch total staff:', error);
+      throw error;
+    }
+  },
+ 
+  getTotalManagers: async () => {
+    try {
+      const response = await axios.get(`api/managers/total`);
+      return response.data.totalManagers;
+    } catch (error) {
+      console.error('Failed to fetch total managers:', error);
+      throw error;
+    }
+  }
 };
 
 export default RoleAPI;
