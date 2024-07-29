@@ -57,9 +57,9 @@ const RoleAPI = {
     }
   },
 
-  getTotalCustomers: async (CustomerId) => {
+  getTotalCustomers: async () => {
     try {
-      const response = await apiClient.get(`${CustomerId}/customers/total`);
+      const response = await apiClient.get(`/customers/total`);
       return response.data.totalCustomers;
     } catch (error) {
       console.error('Failed to fetch total customers:', error);
@@ -69,7 +69,7 @@ const RoleAPI = {
   
   getTotalStaff: async () => {
     try {
-      const response = await axios.get(`api/staff/total`);
+      const response = await axios.get(`/staff/total`);
       return response.data.totalStaff;
     } catch (error) {
       console.error('Failed to fetch total staff:', error);
@@ -79,7 +79,7 @@ const RoleAPI = {
  
   getTotalManagers: async () => {
     try {
-      const response = await axios.get(`api/managers/total`);
+      const response = await axios.get(`/managers/total`);
       return response.data.totalManagers;
     } catch (error) {
       console.error('Failed to fetch total managers:', error);
