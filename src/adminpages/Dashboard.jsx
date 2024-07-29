@@ -385,7 +385,40 @@ const Dashboard = () => {
         </div>
         <div >
         </div>
-        
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="bg-white rounded shadow p-4">
+            <div className="flex items-center mb-2">
+              <FontAwesomeIcon icon={faUsers} className="text-blue-500 mr-2" />
+              <h4 className="text-lg font-semibold">Total Customers</h4>
+            </div>
+            <div className="flex items-baseline">
+              <p className="text-2xl font-bold">{totalCustomers.toLocaleString()}</p>
+              <p className="ml-2 text-sm text-gray-500">Accounts</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded shadow p-4">
+            <div className="flex items-center mb-2">
+              <FontAwesomeIcon icon={faUserTie} className="text-blue-500 mr-2" />
+              <h4 className="text-lg font-semibold">Total Staff</h4>
+            </div>
+            <div className="flex items-baseline">
+              <p className="text-2xl font-bold">{totalStaff.toLocaleString()}</p>
+              <p className="ml-2 text-sm text-gray-500">Accounts</p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded shadow p-4">
+            <div className="flex items-center mb-2">
+              <FontAwesomeIcon icon={faUserShield} className="text-blue-500 mr-2" />
+              <h4 className="text-lg font-semibold">Total Managers</h4>
+            </div>
+            <div className="flex items-baseline">
+              <p className="text-2xl font-bold">{totalManagers.toLocaleString()}</p>
+              <p className="ml-2 text-sm text-gray-500">Accounts</p>
+            </div>
+          </div>
+        </div>
         
       </div>
     
