@@ -13,6 +13,8 @@ const Dashboard = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
   const [dateRange, setDateRange] = useState('day'); // Default is day
+  const [percentageChange, setPercentageChange] = useState(0); // Percentage change for total orders
+  const [amountPercentageChange, setAmountPercentageChange] = useState(0); // Percentage change for total amount
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -29,6 +31,9 @@ const Dashboard = () => {
 
         setTotalCount(totalOrders); // Set total count in state
         setTotalAmount(totalOrderAmount); // Set total amount in state
+
+        // Calculate percentage changes
+        calculatePercentageChanges(fetchedOrders);
       } catch (error) {
         console.error('Failed to fetch orders:', error);
       }
@@ -36,6 +41,32 @@ const Dashboard = () => {
 
     fetchOrders();
   }, []);
+
+  const calculatePercentageChanges = (orders) => {
+    const startOfCurrentMonth = moment().startOf('month');
+    const endOfCurrentMonth = moment().endOf('month');
+    const startOfPreviousMonth = moment().subtract(1, 'month').startOf('month');
+    const endOfPreviousMonth = moment().subtract(1, 'month').endOf('month');
+
+    const currentMonthOrders = orders.filter(order =>
+      moment(order.date).isBetween(startOfCurrentMonth, endOfCurrentMonth, 'day', '[]')
+    );
+    const previousMonthOrders = orders.filter(order =>
+      moment(order.date).isBetween(startOfPreviousMonth, endOfPreviousMonth, 'day', '[]')
+    );
+
+    const currentMonthTotal = currentMonthOrders.length;
+    const previousMonthTotal = previousMonthOrders.length;
+
+    const currentMonthAmount = currentMonthOrders.reduce((acc, order) => acc + order.amount, 0);
+    const previousMonthAmount = previousMonthOrders.reduce((acc, order) => acc + order.amount, 0);
+
+    const percentageChange = previousMonthTotal === 0 ? 0 : ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100;
+    const amountPercentageChange = previousMonthAmount === 0 ? 0 : ((currentMonthAmount - previousMonthAmount) / previousMonthAmount) * 100;
+
+    setPercentageChange(percentageChange.toFixed(2));
+    setAmountPercentageChange(amountPercentageChange.toFixed(2));
+  };
 
   const formatOrdersData = () => {
     const orderCountsByDate = {};
@@ -81,6 +112,11 @@ const Dashboard = () => {
     setCountData(countData);
     setAmountData(amountData);
     setCategories(countData.map((data) => data.date));
+
+    // Debugging data passed to the chart
+    console.log('Count Data:', countData);
+    console.log('Amount Data:', amountData);
+    console.log('Categories:', categories);
   }, [orders, dateRange]);
 
   const apexOptions = {
@@ -261,10 +297,10 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between mb-4">
+    <div className="container mx-auto p-4">
+      <div className="flex justify-center mb-4">
         <button onClick={() => setDateRange('day')} className={`px-4 py-2 ${dateRange === 'day' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Day</button>
-        <button onClick={() => setDateRange('week')} className={`px-4 py-2 ${dateRange === 'week' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Week</button>
+        <button onClick={() => setDateRange('week')} className={`px-4 py-2 mx-2 ${dateRange === 'week' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Week</button>
         <button onClick={() => setDateRange('month')} className={`px-4 py-2 ${dateRange === 'month' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Month</button>
       </div>
 
@@ -276,7 +312,7 @@ const Dashboard = () => {
           </div>
           <div className="flex items-baseline">
             <p className="text-2xl font-bold">{totalCount.toLocaleString()}</p>
-            <p className="ml-2 text-green-500 text-sm">0.43% ↑</p>
+            <p className={`ml-2 text-sm ${percentageChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>{percentageChange}% {percentageChange >= 0 ? '↑' : '↓'}</p>
           </div>
         </div>
         <div className="w-1/2 ml-2 p-4 bg-white rounded shadow">
@@ -286,7 +322,7 @@ const Dashboard = () => {
           </div>
           <div className="flex items-baseline">
             <p className="text-2xl font-bold">${totalAmount.toLocaleString()}</p>
-            <p className="ml-2 text-green-500 text-sm">0.43% ↑</p>
+            <p className={`ml-2 text-sm ${amountPercentageChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>{amountPercentageChange}% {amountPercentageChange >= 0 ? '↑' : '↓'}</p>
           </div>
         </div>
       </div>
