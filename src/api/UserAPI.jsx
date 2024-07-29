@@ -69,6 +69,16 @@ const UserAPI = {
     const response = await apiClient.get(`/users/role/${roleName}`);
     return response.data;
   },
+getTotalCustomers: async (userId) => {
+    try {
+      const response = await apiClient.get(`/role/${userId}`);
+      return response.data.count; 
+    } catch (error) {
+      console.error('Failed to fetch total customers:', error);
+      throw new Error("Failed to retrieve total customers.");
+    }
+  },
+
 };
 
 export default UserAPI;

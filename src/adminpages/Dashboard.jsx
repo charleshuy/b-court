@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoneyBill, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { faUserTie, faUserShield } from '@fortawesome/free-solid-svg-icons';
 import RoleAPI from '../api/RoleAPI';
+import UserAPI from '../api/UserAPI';
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -50,7 +51,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const customers = await RoleAPI.getTotalCustomer();
+        const customers = await UserAPI.getTotalCustomers();
         const staff = await RoleAPI.getTotalStaff();
         const managers = await RoleAPI.getTotalManagers();
         setTotalStaff(staff);
@@ -62,6 +63,17 @@ const Dashboard = () => {
     };
     fetchCounts();
   }, []);
+
+  const fetchRoleIds = async () => {
+  try {
+    const roleIds = await RoleAPI.getRoleIds();
+    console.log('Role IDs:', roleIds);
+  } catch (error) {
+    console.error('Error fetching role IDs:', error);
+  }
+};
+
+fetchRoleIds();
   
 
     const calculatePercentageChanges = (orders) => {
