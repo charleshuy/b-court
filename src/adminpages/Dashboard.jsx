@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import OrderAPI from '../api/OrderAPI';
 import moment from 'moment';
-import { FaRegCalendarMinus } from 'react-icons/fa';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMoneyBill, faUsers } from '@fortawesome/free-solid-svg-icons';
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -11,6 +12,9 @@ const Dashboard = () => {
   const [categories, setCategories] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [dateRange, setDateRange] = useState('day'); // Default is day
+  const [percentageChange, setPercentageChange] = useState(0); // Percentage change for total orders
+  const [amountPercentageChange, setAmountPercentageChange] = useState(0); // Percentage change for total amount
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -22,11 +26,14 @@ const Dashboard = () => {
         }));
         setOrders(ordersWithKeys);
 
-        const totalOrders = fetchedOrders.length;
-        const totalOrderAmount = fetchedOrders.reduce((acc, order) => acc + order.amount, 0);
+        const totalOrders = fetchedOrders.length; // Calculate total count
+        const totalOrderAmount = fetchedOrders.reduce((acc, order) => acc + order.amount, 0); // Calculate total amount
 
-        setTotalCount(totalOrders);
-        setTotalAmount(totalOrderAmount);
+        setTotalCount(totalOrders); // Set total count in state
+        setTotalAmount(totalOrderAmount); // Set total amount in state
+
+        // Calculate percentage changes
+        calculatePercentageChanges(fetchedOrders);
       } catch (error) {
         console.error('Failed to fetch orders:', error);
       }
@@ -35,56 +42,82 @@ const Dashboard = () => {
     fetchOrders();
   }, []);
 
+  const calculatePercentageChanges = (orders) => {
+    const startOfCurrentMonth = moment().startOf('month');
+    const endOfCurrentMonth = moment().endOf('month');
+    const startOfPreviousMonth = moment().subtract(1, 'month').startOf('month');
+    const endOfPreviousMonth = moment().subtract(1, 'month').endOf('month');
+
+    const currentMonthOrders = orders.filter(order =>
+      moment(order.date).isBetween(startOfCurrentMonth, endOfCurrentMonth, 'day', '[]')
+    );
+    const previousMonthOrders = orders.filter(order =>
+      moment(order.date).isBetween(startOfPreviousMonth, endOfPreviousMonth, 'day', '[]')
+    );
+
+    const currentMonthTotal = currentMonthOrders.length;
+    const previousMonthTotal = previousMonthOrders.length;
+
+    const currentMonthAmount = currentMonthOrders.reduce((acc, order) => acc + order.amount, 0);
+    const previousMonthAmount = previousMonthOrders.reduce((acc, order) => acc + order.amount, 0);
+
+    const percentageChange = previousMonthTotal === 0 ? 0 : ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100;
+    const amountPercentageChange = previousMonthAmount === 0 ? 0 : ((currentMonthAmount - previousMonthAmount) / previousMonthAmount) * 100;
+
+    setPercentageChange(percentageChange.toFixed(2));
+    setAmountPercentageChange(amountPercentageChange.toFixed(2));
+  };
+
+  const formatOrdersData = () => {
+    const orderCountsByDate = {};
+    const orderAmountsByDate = {};
+
+    orders.forEach((order) => {
+      let orderDate;
+      if (dateRange === 'day') {
+        orderDate = moment(order.date, 'YYYY-MM-DD').format('YYYY-MM-DD');
+      } else if (dateRange === 'week') {
+        orderDate = moment(order.date, 'YYYY-MM-DD').startOf('week').format('YYYY-MM-DD');
+      } else if (dateRange === 'month') {
+        orderDate = moment(order.date, 'YYYY-MM-DD').startOf('month').format('YYYY-MM-DD');
+      }
+
+      if (orderCountsByDate[orderDate]) {
+        orderCountsByDate[orderDate] += 1;
+        orderAmountsByDate[orderDate] += order.amount;
+      } else {
+        orderCountsByDate[orderDate] = 1;
+        orderAmountsByDate[orderDate] = order.amount;
+      }
+    });
+
+    const countData = Object.keys(orderCountsByDate).map((date) => ({
+      date,
+      orders: orderCountsByDate[date],
+    }));
+
+    const amountData = Object.keys(orderAmountsByDate).map((date) => ({
+      date,
+      amount: orderAmountsByDate[date],
+    }));
+
+    countData.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
+    amountData.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
+
+    return { countData, amountData };
+  };
+
   useEffect(() => {
-    const formatDailyOrdersData = () => {
-      const orderCountsByDate = {};
-      const orderAmountsByDate = {};
-
-      orders.forEach((order) => {
-        const orderDate = moment(order.date, 'YYYY-MM-DD').format('YYYY-MM-DD');
-        if (orderCountsByDate[orderDate]) {
-          orderCountsByDate[orderDate] += 1;
-          orderAmountsByDate[orderDate] += order.amount;
-        } else {
-          orderCountsByDate[orderDate] = 1;
-          orderAmountsByDate[orderDate] = order.amount;
-        }
-      });
-
-      const countData = Object.keys(orderCountsByDate).map((date) => ({
-        date,
-        orders: orderCountsByDate[date],
-      }));
-
-      const amountData = Object.keys(orderAmountsByDate).map((date) => ({
-        date,
-        amount: orderAmountsByDate[date],
-      }));
-
-      countData.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
-      amountData.sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
-
-      return { countData, amountData };
-    };
-
-    const { countData, amountData } = formatDailyOrdersData();
+    const { countData, amountData } = formatOrdersData();
     setCountData(countData);
     setAmountData(amountData);
     setCategories(countData.map((data) => data.date));
-  }, [orders]);
 
-  const getOldestAndNewestDates = (data) => {
-    if (data.length === 0) return { oldest: null, newest: null };
-
-    const dates = data.map((item) => moment(item.date));
-    const oldestDate = moment.min(dates).format('YYYY-MM-DD');
-    const newestDate = moment.max(dates).format('YYYY-MM-DD');
-
-    return { oldest: oldestDate, newest: newestDate };
-  };
-
-  const { oldest: oldestCountDate, newest: newestCountDate } = getOldestAndNewestDates(countData);
-  const { oldest: oldestAmountDate, newest: newestAmountDate } = getOldestAndNewestDates(amountData);
+    // Debugging data passed to the chart
+    console.log('Count Data:', countData);
+    console.log('Amount Data:', amountData);
+    console.log('Categories:', categories);
+  }, [orders, dateRange]);
 
   const apexOptions = {
     legend: {
@@ -193,19 +226,6 @@ const Dashboard = () => {
     },
   };
 
-  const chartTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="custom-tooltip">
-          <p>{`Date: ${label}`}</p>
-          <p>{`Value: ${payload[0].value}`}</p>
-        </div>
-      );
-    }
-
-    return null;
-  };
-
   const apexBarOptions = {
     colors: ['#3C50E0', '#80CAEE'],
     chart: {
@@ -277,14 +297,41 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-4">
+    <div className="container mx-auto p-4">
+      <div className="flex justify-center mb-4">
+        <button onClick={() => setDateRange('day')} className={`px-4 py-2 ${dateRange === 'day' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Day</button>
+        <button onClick={() => setDateRange('week')} className={`px-4 py-2 mx-2 ${dateRange === 'week' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Week</button>
+        <button onClick={() => setDateRange('month')} className={`px-4 py-2 ${dateRange === 'month' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Month</button>
+      </div>
+
+      <div className="flex justify-between mb-4">
+        <div className="w-1/2 mr-2 p-4 bg-white rounded shadow">
+          <div className="flex items-center mb-2">
+            <FontAwesomeIcon icon={faUsers} className="text-blue-500 mr-2" />
+            <h4 className="text-lg font-semibold">Total Orders Count</h4>
+          </div>
+          <div className="flex items-baseline">
+            <p className="text-2xl font-bold">{totalCount.toLocaleString()}</p>
+            <p className={`ml-2 text-sm ${percentageChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>{percentageChange}% {percentageChange >= 0 ? '↑' : '↓'}</p>
+          </div>
+        </div>
+        <div className="w-1/2 ml-2 p-4 bg-white rounded shadow">
+          <div className="flex items-center mb-2">
+            <FontAwesomeIcon icon={faMoneyBill} className="text-blue-500 mr-2" />
+            <h4 className="text-lg font-semibold">Total Revenue Amount</h4>
+          </div>
+          <div className="flex items-baseline">
+            <p className="text-2xl font-bold">${totalAmount.toLocaleString()}</p>
+            <p className={`ml-2 text-sm ${amountPercentageChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>{amountPercentageChange}% {amountPercentageChange >= 0 ? '↑' : '↓'}</p>
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-between mb-4">
         <div className="flex-1 mr-2">
           <div className="rounded-sm border border-stroke bg-white px-5 pt-5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="flex justify-between items-center mb-4">
-              <span className="block h-2.5 w-full max-w-2.5 rounded-full bg-cyan-400"></span>
               <h3 className="font-semibold text-primary" style={{ width: '20%' }}>Order Count</h3>
-              <p className="text-sm font-medium">{oldestCountDate} - {newestCountDate}</p>
             </div>
             <div className="overflow-hidden">
               <ReactApexChart
@@ -296,11 +343,11 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
         <div className="flex-1 ml-2">
           <div className="rounded-sm border border-stroke bg-white px-5 pt-5 pb-5 shadow-default dark:border-strokedark dark:bg-boxdark">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-primary">Order Amount</h3>
-              <p className="text-sm font-medium">{oldestAmountDate} - {newestAmountDate}</p>
             </div>
             <div className="overflow-hidden">
               <ReactApexChart
@@ -311,28 +358,6 @@ const Dashboard = () => {
               />
             </div>
           </div>
-        </div>
-      </div>
-      <div className="mt-4">
-        <p className="text-sm">Order Count - Oldest Date: {oldestCountDate}</p>
-        <p className="text-sm">Order Count - Newest Date: {newestCountDate}</p>
-        <p className="text-sm">Order Amount - Oldest Date: {oldestAmountDate}</p>
-        <p className="text-sm">Order Amount - Newest Date: {newestAmountDate}</p>
-      </div>
-      <div className="grid grid-cols-2 gap-[30px] mt-[25px] pb-[15px]">
-        <div className="h-[100px] rounded-[8px] bg-white border-l-[4px] border-[#4e73df] flex items-center justify-between px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out">
-          <div>
-            <h2 className="text-[#B589DF] text-[11px] leading-[17px] font-bold">Total Count</h2>
-            <h1 className="text-[20px] leading-[24px] font-bold text-[#5a5c69] mt-[5px]">{totalCount}</h1>
-          </div>
-          <FaRegCalendarMinus fontSize={28} color="" />
-        </div>
-        <div className="h-[100px] rounded-[8px] bg-white border-l-[4px] border-[#4e73df] flex items-center justify-between px-[30px] cursor-pointer hover:shadow-lg transform hover:scale-[103%] transition duration-300 ease-out">
-          <div>
-            <h2 className="text-[#B589DF] text-[11px] leading-[17px] font-bold">Total Amount</h2>
-            <h1 className="text-[20px] leading-[24px] font-bold text-[#5a5c69] mt-[5px]">{totalAmount}</h1>
-          </div>
-          <FaRegCalendarMinus fontSize={28} color="" />
         </div>
       </div>
     </div>
