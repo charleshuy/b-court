@@ -5,7 +5,7 @@ import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoneyBill, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { faUserTie, faUserShield } from '@fortawesome/free-solid-svg-icons';
-import RoleAPI from '../api/RoleAPI';
+// import RoleAPI from '../api/RoleAPI';
 import UserAPI from '../api/UserAPI';
 
 const Dashboard = () => {
@@ -52,8 +52,8 @@ const Dashboard = () => {
     const fetchCounts = async () => {
       try {
         const customers = await UserAPI.getTotalCustomers();
-        const staff = await RoleAPI.getTotalStaff();
-        const managers = await RoleAPI.getTotalManagers();
+        const staff = await UserAPI.getTotalStaff();
+        const managers = await UserAPI.getTotalManagers();
         setTotalStaff(staff);
         setTotalCustomers(customers);
         setTotalManagers(managers);
@@ -66,10 +66,10 @@ const Dashboard = () => {
 
   const fetchRoleIds = async () => {
   try {
-    const roleIds = await RoleAPI.getRoleIds();
-    console.log('Role IDs:', roleIds);
+    const roleIds = await UserAPI.getAllUsers;
+    console.log('User IDs:', roleIds);
   } catch (error) {
-    console.error('Error fetching role IDs:', error);
+    console.error('Error fetching Users IDs:', error);
   }
 };
 

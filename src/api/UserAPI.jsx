@@ -1,4 +1,5 @@
 import apiClient from "./apiClient";
+import axios from "axios"; 
 
 const UserAPI = {
   register: async (userData) => {
@@ -69,15 +70,35 @@ const UserAPI = {
     const response = await apiClient.get(`/users/role/${roleName}`);
     return response.data;
   },
-getTotalCustomers: async (userId) => {
+  getTotalCustomers: async (userId) => {
     try {
-      const response = await apiClient.get(`/role/${userId}`);
+      const response = await apiClient.get(`/roles/${userId}`);
       return response.data.count; 
     } catch (error) {
       console.error('Failed to fetch total customers:', error);
       throw new Error("Failed to retrieve total customers.");
     }
   },
+
+  getTotalStaff: async (userId) => {
+    try {
+      const response = await axios.get(`/roles/${userId}`);
+      return response.data.count;
+    } catch (error) {
+      console.error('Failed to fetch total staff:', error);
+      throw new Error("Failed to retrieve total customers.");
+    }
+  },
+ 
+  getTotalManagers: async (userId) => {
+    try {
+      const response = await axios.get(`/roles/${userId}`);
+      return response.data.count;
+    } catch (error) {
+      console.error('Failed to fetch total managers:', error);
+      throw new Error("Failed to retrieve total customers.");
+    }
+  }
 
 };
 
