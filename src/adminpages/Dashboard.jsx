@@ -5,8 +5,13 @@ import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoneyBill, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { faUserTie, faUserShield } from '@fortawesome/free-solid-svg-icons';
-// import RoleAPI from '../api/RoleAPI';
+import RoleAPI from '../api/RoleAPI';
 import UserAPI from '../api/UserAPI';
+
+
+const toLocalString = (number) => {
+  return number.toLocaleString();
+};
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -51,9 +56,9 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const customers = await UserAPI.getTotalCustomers();
-        const staff = await UserAPI.getTotalStaff();
-        const managers = await UserAPI.getTotalManagers();
+        const customers = await RoleAPI.getTotalCustomers();
+        const staff = await RoleAPI.getTotalStaff();
+        const managers = await RoleAPI.getTotalManagers();
         setTotalStaff(staff);
         setTotalCustomers(customers);
         setTotalManagers(managers);
@@ -64,16 +69,21 @@ const Dashboard = () => {
     fetchCounts();
   }, []);
 
+  
   const fetchRoleIds = async () => {
   try {
-    const roleIds = await UserAPI.getAllUsers;
-    console.log('User IDs:', roleIds);
+    const userId = await RoleAPI.getAllRoles;
+    console.log('User IDs:', userId);
   } catch (error) {
-    console.error('Error fetching Users IDs:', error);
+    console.error('Error fetching User IDs:', error);
   }
-};
+  };
+  
+  
 
-fetchRoleIds();
+  fetchRoleIds();
+  
+  
   
 
     const calculatePercentageChanges = (orders) => {
