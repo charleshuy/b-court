@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import OrderAPI from '../api/OrderAPI';
 import moment from 'moment';
-import UserAPI from '../api/UserAPI';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoneyBill, faUsers, faChartPie } from '@fortawesome/free-solid-svg-icons';
 import { faUserTie, faUserShield } from '@fortawesome/free-solid-svg-icons'; 
+
+
+
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -474,16 +476,16 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      <div >
+        <div className="flex flex-col xl:flex-row gap-6 mt-6">
+      <div className="flex-1 p-4 bg-white rounded shadow">
 
-
-      <div className="w-full p-4 bg-white rounded shadow mt-6">
-
-        <h4 className="text-lg font-semibold mb-2"><FontAwesomeIcon icon={faChartPie} className="text-blue-500 mr-2" />Order Distribution by Court</h4>
+        <h4 className="text-lg font-semibold mb-2"><FontAwesomeIcon icon={faChartPie} className="text-blue-500 mr-3" />Order Distribution by Court</h4>
         <ReactApexChart
           options={{
             chart: {
               type: 'pie',
-              height: 400,
+              height: 500,
             },
             labels: courtOrderCounts.map(court => court.name),
             legend: {
@@ -492,12 +494,14 @@ const Dashboard = () => {
           }}
           series={courtOrderCounts.map(court => court.count)}
           type="pie"
-          height={400}
+          height={500}
         />
-      </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      </div >
+          
+        <div className="w-1/3 p-4">
+      <div className="grid grid-row-3 gap-5">
         <div className="bg-white rounded shadow p-4">
-          <div className="flex items-center mb-2">
+          <div className="flex items-center mb-20">
             <FontAwesomeIcon icon={faUsers} className="text-blue-500 mr-2" />
             <h4 className="text-lg font-semibold">Total Customers</h4>
           </div>
@@ -508,7 +512,7 @@ const Dashboard = () => {
         </div>
 
         <div className="bg-white rounded shadow p-4">
-          <div className="flex items-center mb-2">
+          <div className="flex items-center mb-20">
             <FontAwesomeIcon icon={faUserTie} className="text-blue-500 mr-2" />
             <h4 className="text-lg font-semibold">Total Staff</h4>
           </div>
@@ -519,7 +523,7 @@ const Dashboard = () => {
         </div>
 
         <div className="bg-white rounded shadow p-4">
-          <div className="flex items-center mb-2">
+          <div className="flex items-center mb-20">
             <FontAwesomeIcon icon={faUserShield} className="text-blue-500 mr-2" />
             <h4 className="text-lg font-semibold">Total Managers</h4>
           </div>
@@ -528,7 +532,50 @@ const Dashboard = () => {
             <p className="ml-2 text-sm text-gray-500">Accounts</p>
           </div>
         </div>
+        </div>
+        </div>
       </div>
+</div>
+
+<footer className="mt-6 bg-blue-500 dark:bg-boxdark p-8 text-center">
+  <div className="container mx-auto">
+    <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+      <div className="flex flex-col items-center sm:items-start">
+        <h4 className="text-lg font-semibold text-black dark:text-white">About Us</h4>
+        <p className="mt-2 text-sm text-black dark:text-white">
+          The Badminton Management System is a comprehensive solution for managing badminton courts, bookings, payments, and more.
+        </p>
+      </div>
+      <div className="flex flex-col items-center sm:items-start">
+        <h4 className="text-lg font-semibold text-black dark:text-white">Quick Links</h4>
+        <ul className="mt-2 flex flex-col gap-2 text-sm text-black dark:text-white">
+          <li><a href="#" className="hover:underline">Privacy Policy</a></li>
+          <li><a href="#" className="hover:underline">Terms of Service</a></li>
+          <li><a href="#" className="hover:underline">Contact Us</a></li>
+        </ul>
+      </div>
+      <div className="flex flex-col items-center sm:items-start">
+        <h4 className="text-lg font-semibold text-black dark:text-white">Contact Us</h4>
+        <p className="mt-2 text-sm text-black dark:text-white">
+          Email: admin@badmintonms.com
+        </p>
+        <p className="text-sm text-black dark:text-white">
+          Phone: +123 456 7890
+        </p>
+      </div>
+      <div className="flex flex-col items-center sm:items-start">
+        <h4 className="text-lg font-semibold text-black dark:text-white">Follow Us</h4>
+        <div className="mt-2 flex gap-4">
+          <a href="#" className="text-black dark:text-white hover:underline"><i className="fab fa-facebook-f"></i> Facebook</a>
+          <a href="#" className="text-black dark:text-white hover:underline"><i className="fab fa-twitter"></i> Twitter</a>
+          <a href="#" className="text-black dark:text-white hover:underline"><i className="fab fa-instagram"></i> Instagram</a>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</footer>
+
     </div>
       
     
