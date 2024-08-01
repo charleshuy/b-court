@@ -50,23 +50,7 @@ const Dashboard = () => {
     fetchOrders();
   }, []);
 
-  // useEffect(() => {
-  //   const fetchCounts = async () => {
-  //     try {
-  //       const customers = await UserAPI.getTotalCustomers();
-  //       const staff = await UserAPI.getTotalStaff();
-  //       const managers = await UserAPI.getTotalManagers();
-  //       setTotalStaff(staff);
-  //       setTotalCustomers(customers);
-  //       setTotalManagers(managers);
-  //     } catch (error) {
-        
-  //       console.error('Failed to fetch counts:', error);
-  //     }
-  //   };
-  //   fetchCounts();
-  // }, []);
-  
+
   useEffect(() => {
     // Fetch data from the API
     fetch("http://localhost:8080/users/role/Customer")
