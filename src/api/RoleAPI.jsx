@@ -61,6 +61,7 @@ const RoleAPI = {
 getTotalCustomers: async (Customers) => {
     try {
       const response = await apiClient.get(`/users/role/${Customers}`);
+      console.log(response.data)
       return response.data.count; 
     } catch (error) {
       console.error('Failed to fetch total customers:', error);

@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import OrderAPI from '../api/OrderAPI';
 import moment from 'moment';
+import UserAPI from '../api/UserAPI';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMoneyBill, faUsers, faChartPie } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faUserShield } from '@fortawesome/free-solid-svg-icons'; 
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -16,6 +18,9 @@ const Dashboard = () => {
   const [percentageChange, setPercentageChange] = useState(0);
   const [amountPercentageChange, setAmountPercentageChange] = useState(0);
   const [courtOrderCounts, setCourtOrderCounts] = useState([]);
+  const [totalCustomers, setTotalCustomers] = useState(0);
+  const [totalStaff, setTotalStaff] = useState(0);
+  const [totalManagers, setTotalManagers] = useState(0);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -43,6 +48,69 @@ const Dashboard = () => {
     fetchOrders();
   }, []);
 
+  // useEffect(() => {
+  //   const fetchCounts = async () => {
+  //     try {
+  //       const customers = await UserAPI.getTotalCustomers();
+  //       const staff = await UserAPI.getTotalStaff();
+  //       const managers = await UserAPI.getTotalManagers();
+  //       setTotalStaff(staff);
+  //       setTotalCustomers(customers);
+  //       setTotalManagers(managers);
+  //     } catch (error) {
+        
+  //       console.error('Failed to fetch counts:', error);
+  //     }
+  //   };
+  //   fetchCounts();
+  // }, []);
+  
+  useEffect(() => {
+    // Fetch data from the API
+    fetch("http://localhost:8080/users/role/Customer")
+      .then(response => {
+        // Check if the response is ok (status code 200-299)
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Log the fetched data to the console
+        setTotalCustomers(data.totalElements);
+      })
+  }, []);
+  useEffect(() => {
+    // Fetch data from the API
+    fetch("http://localhost:8080/users/role/Staff")
+      .then(response => {
+        // Check if the response is ok (status code 200-299)
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Log the fetched data to the console
+        setTotalStaff(data.totalElements);
+      })
+  }, []);
+  useEffect(() => {
+    // Fetch data from the API
+    fetch("http://localhost:8080/users/role/Manager")
+      .then(response => {
+        // Check if the response is ok (status code 200-299)
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Log the fetched data to the console
+        setTotalManagers(data.totalElements);
+      })
+  }, []);
+  
   const calculatePercentageChanges = (orders) => {
     const startOfCurrentMonth = moment().startOf('month');
     const endOfCurrentMonth = moment().endOf('month');
@@ -427,7 +495,43 @@ const Dashboard = () => {
           height={400}
         />
       </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="bg-white rounded shadow p-4">
+          <div className="flex items-center mb-2">
+            <FontAwesomeIcon icon={faUsers} className="text-blue-500 mr-2" />
+            <h4 className="text-lg font-semibold">Total Customers</h4>
+          </div>
+          <div className="flex items-baseline">
+            <p className="text-2xl font-bold">{totalCustomers.toLocaleString()}</p>
+            <p className="ml-2 text-sm text-gray-500">Accounts</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded shadow p-4">
+          <div className="flex items-center mb-2">
+            <FontAwesomeIcon icon={faUserTie} className="text-blue-500 mr-2" />
+            <h4 className="text-lg font-semibold">Total Staff</h4>
+          </div>
+          <div className="flex items-baseline">
+            <p className="text-2xl font-bold">{totalStaff.toLocaleString()}</p>
+            <p className="ml-2 text-sm text-gray-500">Accounts</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded shadow p-4">
+          <div className="flex items-center mb-2">
+            <FontAwesomeIcon icon={faUserShield} className="text-blue-500 mr-2" />
+            <h4 className="text-lg font-semibold">Total Managers</h4>
+          </div>
+          <div className="flex items-baseline">
+            <p className="text-2xl font-bold">{totalManagers.toLocaleString()}</p>
+            <p className="ml-2 text-sm text-gray-500">Accounts</p>
+          </div>
+        </div>
+      </div>
     </div>
+      
+    
   );
 };
 
