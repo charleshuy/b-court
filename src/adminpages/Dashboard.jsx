@@ -537,7 +537,7 @@ const Dashboard = () => {
       </div>
 </div>
 
-<footer className="mt-6 bg-blue-500 dark:bg-boxdark p-8 text-center">
+<footer className="mt-6 bg-blue-400 dark:bg-boxdark p-8 text-center">
   <div className="container mx-auto">
     <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
       <div className="flex flex-col items-center sm:items-start">
